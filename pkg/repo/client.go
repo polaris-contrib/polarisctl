@@ -24,7 +24,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/0226zy/polarisctl/pkg/entity"
+	"github.com/polaris-contrilb/polarisctl/pkg/entity"
 	"github.com/spf13/viper"
 )
 

@@ -19,11 +19,11 @@ package routings_test
 import (
 	"bytes"
 
-	"github.com/0226zy/polarisctl/pkg/cmd/routings"
 	"github.com/glycerine/goconvey/convey"
+	"github.com/polaris-contrilb/polarisctl/pkg/cmd/routings"
 
-	"github.com/0226zy/polarisctl/pkg/entity"
-	"github.com/0226zy/polarisctl/pkg/repo"
+	"github.com/polaris-contrilb/polarisctl/pkg/entity"
+	"github.com/polaris-contrilb/polarisctl/pkg/repo"
 
 	"testing"
 )

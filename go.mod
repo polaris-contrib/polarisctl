@@ -1,4 +1,4 @@
-module github.com/0226zy/polarisctl
+module github.com/polaris-contrilb/polarisctl
 
 go 1.20
 
