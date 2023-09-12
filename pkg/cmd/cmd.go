@@ -49,8 +49,8 @@ func NewDefaultPolarisCommand() *cobra.Command {
 	}
 
 	defaultPath := home + "/.polarisctl/polarisctl_config.json"
-	root.Flags().StringVarP(&configPath, "config", "c", defaultPath, "cluster config path")
-	root.Flags().StringVarP(&clusterName, "cluster", "s", "", "current cluster")
+	root.PersistentFlags().StringVar(&configPath, "config", defaultPath, "cluster config path")
+	root.PersistentFlags().StringVar(&clusterName, "cluster", "", "current cluster")
 	root.PersistentFlags().BoolVar(&debug, "debug", false, "debug log")
 	viper.BindPFlag("debug", root.PersistentFlags().Lookup("debug"))
 
