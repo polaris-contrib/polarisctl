@@ -1,0 +1,10 @@
+{
+  "default_culster":"test", 
+  "clusters":[
+    {
+      "name":"test",
+      "host":"119.91.66.223:8090",
+      "token":""
+    }
+  ]
+}
