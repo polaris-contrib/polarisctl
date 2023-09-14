@@ -1,12 +1,14 @@
 package namespaces
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"strconv"
 
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/polarismesh/specification/source/go/api/v1/service_manage"
 	"github.com/spf13/cobra"
 )
 
@@ -46,15 +48,19 @@ func runGetNs() {
 
 	body := client.Get()
 
-	var result entity.Result
-	err := json.Unmarshal(body, &result)
+	var response service_manage.BatchQueryResponse
+	//var result entity.Result
+	//err := json.Unmarshal(body, &response)
+	err := jsonpb.Unmarshal(bytes.NewReader(body), &response)
 	if err != nil {
 		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
 		return
 	}
 
-	result.Dump()
-	fmt.Printf("\n====================== responses ========================\n")
-	entity.PrintNamespaces(result.Namespaces)
+	ctlPrint := entity.NewPolarisPrint(response)
+	ctlPrint.Print()
+	//result.Dump()
+	//fmt.Printf("\n====================== responses ========================\n")
+	//entity.NamespaceDump(result.Namespaces)
 
 }
