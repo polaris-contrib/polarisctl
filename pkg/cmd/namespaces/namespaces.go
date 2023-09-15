@@ -2,14 +2,14 @@ package namespaces
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"text/tabwriter"
 
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/polarismesh/specification/source/go/api/v1/service_manage"
 	"github.com/spf13/cobra"
 )
 
@@ -58,25 +58,12 @@ func nsBatchOp(file string, method string, uriPath string) {
 		os.Exit(1)
 	}
 
-	result := &entity.BatchResult{}
-	err = json.Unmarshal(body, result)
+	var response service_manage.BatchWriteResponse
+	err = jsonpb.Unmarshal(bytes.NewReader(body), &response)
 	if err != nil {
 		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
 		return
 	}
-
-	result.CheckRes()
-	result.Dump()
-
-	if 0 == len(result.Responses) {
-		return
-	}
-	fmt.Printf("\n====================== responses ========================\n")
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape|tabwriter.AlignRight|tabwriter.Debug|tabwriter.TabIndent|tabwriter.DiscardEmptyColumns|tabwriter.TabIndent)
-	fmt.Fprintf(w, "namespace\tcode\tinfo\t\n")
-	for _, res := range result.Responses {
-		fmt.Fprintf(w, "%s\t%d\t%s\t\n", res.Namespace.Name, res.Code, res.Info)
-	}
-	w.Flush()
+	ctlPrint := entity.NewPolarisPrint(response)
+	ctlPrint.Print()
 }

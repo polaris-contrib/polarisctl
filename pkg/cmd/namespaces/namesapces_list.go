@@ -49,8 +49,6 @@ func runGetNs() {
 	body := client.Get()
 
 	var response service_manage.BatchQueryResponse
-	//var result entity.Result
-	//err := json.Unmarshal(body, &response)
 	err := jsonpb.Unmarshal(bytes.NewReader(body), &response)
 	if err != nil {
 		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
@@ -59,8 +57,4 @@ func runGetNs() {
 
 	ctlPrint := entity.NewPolarisPrint(response)
 	ctlPrint.Print()
-	//result.Dump()
-	//fmt.Printf("\n====================== responses ========================\n")
-	//entity.NamespaceDump(result.Namespaces)
-
 }

@@ -57,14 +57,61 @@ func (p PolarisPrint) printResponse(response service_manage.Response) {
 }
 
 func (p PolarisPrint) printBatchWriteResponse(response service_manage.BatchWriteResponse) {
+	fmt.Fprintln(p.writer, "====================== batch write result   =========================\n")
+	fmt.Fprintf(p.writer, "code\tinfo\tsize\tsucc_size\tfailed_size\t\n")
+	succWrite, failedWrite := 0, 0
+	for _, res := range response.Responses {
+		if res.Code.Value == uint32(model.Code_ExecuteSuccess) {
+			succWrite += 1
+		} else {
+			failedWrite += 1
+		}
+	}
+	fmt.Fprintf(p.writer, "%d\t%s\t%d\t%d\t%d\t\n", response.Code.Value, response.Info.Value, response.Size.Value, succWrite, failedWrite)
 
-	fmt.Println("print batch write response unimpl")
+	fmt.Fprintln(p.writer, "\n======================  resources   =================================\n")
+	fmt.Fprintf(p.writer, "resource type\tresource name\tcode\tinfo\t\n")
+	for _, res := range response.Responses {
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "namespace", res.Namespace)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "service", res.Service)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "instance", res.Instance)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "routing", res.Routing)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "ratelimit", res.RateLimit)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "circuitBreaker", res.CircuitBreaker)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "user", res.User)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "userGroup", res.UserGroup)
+		p.printResWriteResult(res.Code.Value, res.Info.Value, "authStrategy", res.AuthStrategy)
+	}
+
+	p.writer.Flush()
+}
+
+func (p PolarisPrint) printResWriteResult(code uint32, info string, rsTypeName string, rs interface{}) {
+	if rs == nil {
+		return
+	}
+	value := reflect.ValueOf(rs)
+	if !value.IsValid() || value.IsNil() {
+		return
+	}
+	value = value.Elem()
+
+	field := value.FieldByName("Name")
+	fmt.Fprintf(p.writer, "%s\t", rsTypeName)
+	if field.IsValid() {
+		fmt.Fprintf(p.writer, "%s\t", field.Interface().(*wrapperspb.StringValue).GetValue())
+	} else {
+		fmt.Fprintf(p.writer, "<unkown>\t")
+	}
+	fmt.Fprintf(p.writer, "%d\t", code)
+	fmt.Fprintf(p.writer, "%s\t", info)
+	fmt.Fprintln(p.writer)
 }
 
 func (p PolarisPrint) printBatchQueryResponse(response service_manage.BatchQueryResponse) {
 	fmt.Println("====================== query response   =========================")
-	fmt.Fprintf(p.writer, "\tcode\tinfo\tamount\tsize\t\n")
-	fmt.Fprintf(p.writer, "\t%d\t%s\t%d\t%d\t\n", response.Code.Value, response.Info.Value, response.Amount.Value, response.Size.Value)
+	fmt.Fprintf(p.writer, "code\tinfo\tamount\tsize\t\n")
+	fmt.Fprintf(p.writer, "%d\t%s\t%d\t%d\t\n", response.Code.Value, response.Info.Value, response.Amount.Value, response.Size.Value)
 	p.writer.Flush()
 
 	if 0 != len(response.Namespaces) {
@@ -137,10 +184,9 @@ func (p PolarisPrint) printNamespces(nas []*model.Namespace) {
 }
 
 func (p PolarisPrint) printServices() {
-
 	fmt.Println("\n======================    services    =========================")
 }
+
 func (p PolarisPrint) printInstances() {
 	fmt.Println("\n======================    instances    =========================")
-
 }
