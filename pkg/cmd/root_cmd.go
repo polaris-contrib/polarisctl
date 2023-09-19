@@ -56,9 +56,11 @@ func NewDefaultPolarisCommand() *cobra.Command {
 
 	// register namespaces
 	root.AddCommand(namespaces.NewCmdNamespaces())
+	//root.AddCommand(services.NewCmdServices())
 	return root
 }
 
+// initConfig 初始化集群配置
 func initConfig() {
 	file, err := os.Open(configPath)
 	if err != nil {

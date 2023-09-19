@@ -130,7 +130,6 @@ func (p PolarisPrint) printRsTabHeader(rs interface{}) []string {
 	filedNum := v.NumField()
 	fieldNames := []string{}
 
-	fmt.Fprintf(p.writer, "\t")
 	for i := 0; i < filedNum; i++ {
 		tag := strings.Split(typeOfT.Field(i).Tag.Get("json"), ",")[0]
 		name := typeOfT.Field(i).Name

@@ -1,69 +1,96 @@
 package namespaces
 
 import (
-	"bytes"
-	"fmt"
-	"io/ioutil"
-	"os"
-
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/polarismesh/specification/source/go/api/v1/service_manage"
 	"github.com/spf13/cobra"
 )
 
-// fileName create/delete/update 的资源描述文件:json
+// fileName resource:namespaces description file(format:josn) for create/delete/update
 var fileName string
 
-// NewCmdNamespaces 构建 namespaces 的跟命令
+// NewCmdNamespaces build namespaces root cmd
 func NewCmdNamespaces() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "namespaces subcommand",
-		Short: "namespaces cmd",
-		Long:  "namespaces [list/create/delete/update]",
+		Use:   "namespaces [list|create|delete|update]",
+		Short: "namespaces [list|create|delete|update]",
+		Long:  "namespaces [list|create|delete|update]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
+
+	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for list/create/delete/update namespaces")
+
+	// query command
+	cmd.AddCommand(NewCmdNamespacesList())
+
+	// write command
 	cmd.AddCommand(NewCmdNamespacesCreate())
 	cmd.AddCommand(NewCmdNamespacesDelete())
 	cmd.AddCommand(NewCmdNamespacesUpdate())
-	cmd.AddCommand(NewCmdNamespacesList())
 	return cmd
 }
 
-func nsBatchOp(file string, method string, uriPath string) {
-	jsonFile, err := os.Open(fileName)
-	if err != nil {
-		fmt.Printf("[polarisctl err] input invalid, -f empty\n")
-		os.Exit(1)
+// list param,eg:limit,offset
+var param entity.QueryParam
+var namespacesQueryParam entity.NamespacesQueryParam
+
+// NewCmdNamespacesList build namespaces list command
+func NewCmdNamespacesList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list (-f list_namespaces.json)",
+		Short: "list namespaces",
+		Long:  "list namespaces",
+		Run: func(cmd *cobra.Command, args []string) {
+			rsRepo := repo.NewResourceListRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, param)
+			rsRepo.Get()
+		},
 	}
+	param.ResourceParam = &namespacesQueryParam
+	param.RegisterFlag(cmd)
+	return cmd
+}
 
-	defer jsonFile.Close()
-
-	jsonData, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		os.Exit(1)
+// NewCmdNamespacesCreate build namespaces create command
+func NewCmdNamespacesCreate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "create (-f create_namespaces.json)",
+		Short: "create namespaces",
+		Long:  "create namespaces",
+		Run: func(cmd *cobra.Command, args []string) {
+			rsRepo := repo.NewResourceWriteRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, "POST", fileName)
+			rsRepo.Write()
+		},
 	}
+	cmd.MarkFlagRequired("file")
+	return cmd
+}
 
-	client := repo.GetApiClient()
-	client.BuildURL(uriPath)
-	body := []byte{}
-
-	if method == "post" {
-		body = client.Post(bytes.NewBuffer(jsonData))
-	} else if method == "put" {
-		body = client.Put(bytes.NewBuffer(jsonData))
-	} else {
-		fmt.Printf("[polarisctl internal sys err] unkown method:%s\n", method)
-		os.Exit(1)
+// NewCmdNamespacesDelete build namespaces delete command
+func NewCmdNamespacesDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete (-f delete_namespaces.json)",
+		Short: "delete namespaces",
+		Long:  "delete namespaces",
+		Run: func(cmd *cobra.Command, args []string) {
+			rsRepo := repo.NewResourceWriteRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, "POST", fileName)
+			rsRepo.Write()
+		},
 	}
+	cmd.MarkFlagRequired("file")
+	return cmd
+}
 
-	var response service_manage.BatchWriteResponse
-	err = jsonpb.Unmarshal(bytes.NewReader(body), &response)
-	if err != nil {
-		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
-		return
+// NewCmdNamespacesUpdate build namespaces update command
+func NewCmdNamespacesUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update (-f update_namespaces.json)",
+		Short: "update namespaces",
+		Long:  "update namespaces",
+		Run: func(cmd *cobra.Command, args []string) {
+			rsRepo := repo.NewResourceWriteRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, "PUT", fileName)
+			rsRepo.Write()
+		},
 	}
-	ctlPrint := entity.NewPolarisPrint(response)
-	ctlPrint.Print()
+	cmd.MarkFlagRequired("file")
+	return cmd
 }

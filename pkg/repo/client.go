@@ -15,15 +15,22 @@ import (
 // apiClient http api
 var apiClient *ApiClient
 
-// PolarisURL 资源的 http url 前缀
-type PolarisURL = string
+// ResourceAPI 资源的 http url 前缀
+type ResourceAPI = string
+type ResourceName = string
 
 // url_v1 polaris api v1 url
-const url_v1 string = "/naming/v1/"
+const v1Api string = "/naming/v1/"
 const (
 	//KNamespaceUrl namespaces 操作的 url 前缀
-	NamespaceURL    PolarisURL = url_v1 + "namespaces"
-	NamespaceDelURL PolarisURL = url_v1 + "namespaces/delete"
+	API_NAMESPACES    ResourceAPI = v1Api + "namespaces"
+	API_NAMESPACESDEL ResourceAPI = v1Api + "namespaces/delete"
+	API_SERVICES      ResourceAPI = v1Api + "services"
+)
+
+const (
+	RS_NAMESPACES ResourceName = "namespace"
+	RS_SERICES    ResourceName = "service"
 )
 
 // ApiClient http 请求处理
@@ -51,7 +58,7 @@ func InitApiClient(cluster entity.PolarisClusterConf) {
 }
 
 // BuildURL 构造 net.url
-func (client *ApiClient) BuildURL(value PolarisURL) *url.URL {
+func (client *ApiClient) BuildURL(value ResourceAPI, param string) {
 	var err error
 	client.murl, err = url.Parse("http://" + client.host)
 
@@ -60,7 +67,9 @@ func (client *ApiClient) BuildURL(value PolarisURL) *url.URL {
 		os.Exit(1)
 	}
 	client.murl.Path += value
-	return client.murl
+	if len(param) != 0 {
+		client.murl.RawQuery = param
+	}
 }
 
 // Put 更新/修改操作
@@ -114,6 +123,9 @@ func (client *ApiClient) do() []byte {
 	if err != nil {
 		fmt.Printf("[polarisctl internal sys err] http %s failed:%v\n", method, err)
 		os.Exit(1)
+	}
+	if debuglog {
+		fmt.Printf("[polarisctl debug] resp :%+v\n", res)
 	}
 	return body
 }
