@@ -13,37 +13,65 @@ import (
 
 // ResourceWrite 创建/删除/修改 资源
 type ResourceRepo struct {
-	resource    string
-	queryParam  entity.QueryParam
-	resourceApi ResourceAPI
-	client      *ApiClient
-	rsFile      string
-	method      string
+	resource string
+	client   *ApiClient
+	method   string
+	rsFile   string
+	ctlPrint *entity.PolarisPrint
+	batch    bool
 }
 
-// NewResourceWriteRepo 创建/删除/修改
-func NewResourceWriteRepo(resource, url, method, rsFile string) *ResourceRepo {
+// NewResourceRepo 查询操作
+func NewResourceRepo(resource, url string) *ResourceRepo {
 	return &ResourceRepo{
-		resource:    resource,
-		rsFile:      rsFile,
-		resourceApi: url,
-		method:      method,
-		client:      GetApiClient(),
+		resource: resource,
+		client:   NewApiClient(url),
+		ctlPrint: entity.NewPolarisPrint(),
+		batch:    true,
 	}
 }
 
-// NewResourceListRepo 查询操作
-func NewResourceListRepo(resource, url string, param entity.QueryParam) *ResourceRepo {
-	return &ResourceRepo{
-		resource:    resource,
-		queryParam:  param,
-		resourceApi: url,
-		method:      "GET",
-		client:      GetApiClient(),
-	}
+// Batch set batch write
+func (rsRepo *ResourceRepo) Batch(value bool) *ResourceRepo {
+	rsRepo.batch = value
+	return rsRepo
 }
 
-func (rsRepo ResourceRepo) Write() {
+// Print set print
+func (rsRepo *ResourceRepo) Print(ctlPrint *entity.PolarisPrint) *ResourceRepo {
+	rsRepo.ctlPrint = ctlPrint
+	return rsRepo
+}
+
+// Param set get url param
+func (rsRepo *ResourceRepo) Param(value string) *ResourceRepo {
+	rsRepo.client.queryParam = value
+	return rsRepo
+}
+
+// File set put/post/del resources description file
+func (rsRepo *ResourceRepo) File(value string) *ResourceRepo {
+	rsRepo.rsFile = value
+	return rsRepo
+}
+
+// Method set http method:GET/PUT/POST/PUT/DEL
+func (rsRepo *ResourceRepo) Method(value string) *ResourceRepo {
+	rsRepo.method = value
+	return rsRepo
+}
+
+// Build execute
+func (rsRepo ResourceRepo) Build() {
+	if rsRepo.method == "GET" {
+		rsRepo.get()
+		return
+	}
+	rsRepo.write()
+}
+
+// write put/post/del resources
+func (rsRepo ResourceRepo) write() {
 	jsonFile, err := os.Open(rsRepo.rsFile)
 	if err != nil {
 		fmt.Printf("[polarisctl err] input invalid, -f empty\n")
@@ -57,7 +85,6 @@ func (rsRepo ResourceRepo) Write() {
 		os.Exit(1)
 	}
 
-	rsRepo.client.BuildURL(rsRepo.resourceApi, "")
 	body := []byte{}
 
 	if rsRepo.method == "POST" {
@@ -69,18 +96,29 @@ func (rsRepo ResourceRepo) Write() {
 		os.Exit(1)
 	}
 
-	var response service_manage.BatchWriteResponse
+	if rsRepo.batch {
+
+		var response service_manage.BatchWriteResponse
+		err = jsonpb.Unmarshal(bytes.NewReader(body), &response)
+		if err != nil {
+			fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
+			return
+		}
+		rsRepo.ctlPrint.Response(response).BatchWrite().Print()
+		return
+	}
+
+	var response service_manage.Response
 	err = jsonpb.Unmarshal(bytes.NewReader(body), &response)
 	if err != nil {
 		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
 		return
 	}
-	ctlPrint := entity.NewPolarisPrint(response)
-	ctlPrint.Print()
+	rsRepo.ctlPrint.Response(response).Write().Print()
 }
 
-func (rsRepo ResourceRepo) Get() {
-	rsRepo.client.BuildURL(rsRepo.resourceApi, rsRepo.queryParam.Encode())
+// get query resources
+func (rsRepo ResourceRepo) get() {
 	body := rsRepo.client.Get()
 
 	var response service_manage.BatchQueryResponse
@@ -89,7 +127,5 @@ func (rsRepo ResourceRepo) Get() {
 		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
 		return
 	}
-
-	ctlPrint := entity.NewPolarisPrint(response)
-	ctlPrint.Print()
+	rsRepo.ctlPrint.Response(response).BatchQuery().Print()
 }

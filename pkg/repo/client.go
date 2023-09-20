@@ -25,12 +25,22 @@ const (
 	//KNamespaceUrl namespaces 操作的 url 前缀
 	API_NAMESPACES    ResourceAPI = v1Api + "namespaces"
 	API_NAMESPACESDEL ResourceAPI = v1Api + "namespaces/delete"
-	API_SERVICES      ResourceAPI = v1Api + "services"
+
+	// service
+	API_SERVICES    ResourceAPI = v1Api + "services"
+	API_SERVICESALL ResourceAPI = v1Api + "services/all"
+	API_SERVICESDEL ResourceAPI = v1Api + "services/delete"
+
+	// service alias
+	API_ALIAS     ResourceAPI = v1Api + "service/alias"
+	API_ALIASLIST ResourceAPI = v1Api + "service/aliases"
+	API_ALIASDEL  ResourceAPI = v1Api + "service/aliases/delete"
 )
 
 const (
 	RS_NAMESPACES ResourceName = "namespace"
-	RS_SERICES    ResourceName = "service"
+	RS_SERVICES   ResourceName = "service"
+	RS_ALIAS      ResourceName = "alias"
 )
 
 // ApiClient http 请求处理
@@ -41,24 +51,30 @@ type ApiClient struct {
 
 	req  *http.Request
 	murl *url.URL
+
+	api        string
+	queryParam string
 }
 
-// GetApiClient 获取 http 全局句柄
-func GetApiClient() *ApiClient {
-	return apiClient
+var cluster entity.PolarisClusterConf
+
+func RegisterCluster(conf entity.PolarisClusterConf) {
+	cluster = conf
 }
 
-// InitApiClient 构造 http client
-func InitApiClient(cluster entity.PolarisClusterConf) {
+// NewApiClient build api client
+func NewApiClient(api string) *ApiClient {
 	apiClient = &ApiClient{
 		host:       cluster.Host,
 		token:      cluster.Token,
 		httpClient: &http.Client{},
+		api:        api,
 	}
+	return apiClient
 }
 
-// BuildURL 构造 net.url
-func (client *ApiClient) BuildURL(value ResourceAPI, param string) {
+// buildURL 构造 net.url
+func (client *ApiClient) buildURL() {
 	var err error
 	client.murl, err = url.Parse("http://" + client.host)
 
@@ -66,14 +82,15 @@ func (client *ApiClient) BuildURL(value ResourceAPI, param string) {
 		fmt.Printf("[polarisctl internal sys err] build url failed:%v\n", err)
 		os.Exit(1)
 	}
-	client.murl.Path += value
-	if len(param) != 0 {
-		client.murl.RawQuery = param
+	client.murl.Path += client.api
+	if len(client.queryParam) != 0 {
+		client.murl.RawQuery = client.queryParam
 	}
 }
 
 // Put 更新/修改操作
 func (client *ApiClient) Put(body io.Reader) []byte {
+	client.buildURL()
 	client.buildReq("PUT", client.murl.String(), body)
 	client.req.Header.Add("Content-Type", "application/json")
 	return client.do()
@@ -81,6 +98,7 @@ func (client *ApiClient) Put(body io.Reader) []byte {
 
 // Post 创建
 func (client *ApiClient) Post(body io.Reader) []byte {
+	client.buildURL()
 	client.buildReq("POST", client.murl.String(), body)
 	client.req.Header.Add("Content-Type", "application/json")
 	return client.do()
@@ -88,6 +106,7 @@ func (client *ApiClient) Post(body io.Reader) []byte {
 
 // Get 查询
 func (client *ApiClient) Get() []byte {
+	client.buildURL()
 	client.buildReq("GET", client.murl.String(), nil)
 	return client.do()
 }
@@ -126,6 +145,7 @@ func (client *ApiClient) do() []byte {
 	}
 	if debuglog {
 		fmt.Printf("[polarisctl debug] resp :%+v\n", res)
+		fmt.Printf("[polarisctl debug] body :%s\n", string(body))
 	}
 	return body
 }

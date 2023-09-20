@@ -17,8 +17,7 @@ func NewCmdNamespaces() *cobra.Command {
 		Long:  "namespaces [list|create|delete|update]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
-
-	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for list/create/delete/update namespaces")
+	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for create/delete/update namespaces")
 
 	// query command
 	cmd.AddCommand(NewCmdNamespacesList())
@@ -27,24 +26,26 @@ func NewCmdNamespaces() *cobra.Command {
 	cmd.AddCommand(NewCmdNamespacesCreate())
 	cmd.AddCommand(NewCmdNamespacesDelete())
 	cmd.AddCommand(NewCmdNamespacesUpdate())
+
 	return cmd
 }
 
-// list param,eg:limit,offset
+// list param, eg: limit, offset
 var param entity.QueryParam
 var namespacesQueryParam entity.NamespacesQueryParam
 
 // NewCmdNamespacesList build namespaces list command
 func NewCmdNamespacesList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list (-f list_namespaces.json)",
-		Short: "list namespaces",
-		Long:  "list namespaces",
+		Use:   "list namespaces",
+		Short: "list --limit=xx --offset=xx",
+		Long:  "list --limit==xx --offset=xx",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceListRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, param)
-			rsRepo.Get()
+			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
+			rsRepo.Method("GET").Param(param.Encode()).Build()
 		},
 	}
+
 	param.ResourceParam = &namespacesQueryParam
 	param.RegisterFlag(cmd)
 	return cmd
@@ -53,14 +54,15 @@ func NewCmdNamespacesList() *cobra.Command {
 // NewCmdNamespacesCreate build namespaces create command
 func NewCmdNamespacesCreate() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create (-f create_namespaces.json)",
-		Short: "create namespaces",
-		Long:  "create namespaces",
+		Use:   "create namespaces",
+		Short: "create (-f create_namespaces.json)",
+		Long:  "create (-f create_namespaces.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceWriteRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, "POST", fileName)
-			rsRepo.Write()
+			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
+			rsRepo.Method("POST").File(fileName).Build()
 		},
 	}
+
 	cmd.MarkFlagRequired("file")
 	return cmd
 }
@@ -68,14 +70,15 @@ func NewCmdNamespacesCreate() *cobra.Command {
 // NewCmdNamespacesDelete build namespaces delete command
 func NewCmdNamespacesDelete() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete (-f delete_namespaces.json)",
-		Short: "delete namespaces",
-		Long:  "delete namespaces",
+		Use:   "delete namespaces",
+		Short: "delete (-f delete_namespaces.json)",
+		Long:  "delete (-f delete_namespaces.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceWriteRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, "POST", fileName)
-			rsRepo.Write()
+			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
+			rsRepo.Method("POST").File(fileName).Build()
 		},
 	}
+
 	cmd.MarkFlagRequired("file")
 	return cmd
 }
@@ -83,14 +86,15 @@ func NewCmdNamespacesDelete() *cobra.Command {
 // NewCmdNamespacesUpdate build namespaces update command
 func NewCmdNamespacesUpdate() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update (-f update_namespaces.json)",
-		Short: "update namespaces",
-		Long:  "update namespaces",
+		Use:   "update namespaces",
+		Short: "update (-f update_namespaces.json)",
+		Long:  "update (-f update_namespaces.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceWriteRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES, "PUT", fileName)
-			rsRepo.Write()
+			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
+			rsRepo.Method("PUT").File(fileName).Build()
 		},
 	}
+
 	cmd.MarkFlagRequired("file")
 	return cmd
 }

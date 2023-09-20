@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/0226zy/polarisctl/pkg/cmd/namespaces"
+	"github.com/0226zy/polarisctl/pkg/cmd/services"
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
 	"github.com/spf13/cobra"
@@ -44,7 +45,7 @@ func NewDefaultPolarisCommand() *cobra.Command {
 		Run: runHelp,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			initConfig()
-			repo.InitApiClient(cluster)
+			repo.RegisterCluster(cluster)
 		},
 	}
 
@@ -56,7 +57,8 @@ func NewDefaultPolarisCommand() *cobra.Command {
 
 	// register namespaces
 	root.AddCommand(namespaces.NewCmdNamespaces())
-	//root.AddCommand(services.NewCmdServices())
+	root.AddCommand(services.NewCmdServices())
+	root.AddCommand(services.NewCmdAlias())
 	return root
 }
 

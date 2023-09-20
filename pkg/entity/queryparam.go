@@ -17,8 +17,8 @@ type QueryParam struct {
 	ResourceParam interface{}
 }
 
-// ServiceQueryParam service 查询参数
-type ServiceQueryParam struct {
+// ServicesQueryParam service 查询参数
+type ServicesQueryParam struct {
 	Name           string `param:"name" short:"service name"`
 	Namespace      string `param:"namespace" short:"service naemspace"`
 	Business       string `param:"business" short:"service business"`
@@ -31,6 +31,14 @@ type ServiceQueryParam struct {
 	Port           string `param:"port" short:"service port"`
 }
 
+// AliasQueryParam namespace 查询参数
+type AliasQueryParam struct {
+	Alias          string `param:"alais",short:"service alias name"`
+	AliasNamespace string `param:"alias_namespace",short:"service alias namespace name"`
+	Serice         string `param:"service",short:"service name"`
+	Namespace      string `param:"namespace",short:"service namespace name"`
+}
+
 // NamespaceQueryParam namespace 查询参数
 type NamespacesQueryParam struct {
 	Name string `param:"name",short:"namespace name"`
@@ -41,8 +49,6 @@ func (param *QueryParam) RegisterFlag(cmd *cobra.Command) {
 	registerFlag(cmd, param)
 	registerFlag(cmd, param.ResourceParam)
 }
-
-func (param ServiceQueryParam) RegisterFlag(cmd *cobra.Command) {}
 
 func (param QueryParam) Encode() string {
 	values := structToParam(&param)

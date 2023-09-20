@@ -12,18 +12,88 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+var resourcesTags []string
+var resourceTags []string
+
+func init() {
+	resourceTags = []string{
+		"namespace", "service", "instance",
+		"routing", "alias", "rateLimit",
+		"user", "userGroup", "authStrategy",
+		"client", "circuitBreaker", "relation",
+		"loginResponse", "modifyAuthStrategy",
+		"modifyUserGroup", "resources",
+		"optionSwitch", "instanceLabels", "data",
+	}
+
+	resourcesTags = []string{
+		"namespaces", "services", "instances",
+		"routings", "aliases", "rateLimits",
+		"configWithServices", "users", "userGroups",
+		"authStrategies", "clients", "summary"}
+}
+
 // PolarisPrint 输出执行结果
 type PolarisPrint struct {
 	result interface{}
 	writer *tabwriter.Writer
+
+	// tag -- > field :BatchQueryResponse print field conf
+	queryConf map[string]string
+	// tag -- > field :BatchWriteResponse print field conf
+	writeConf map[string]string
+
+	// resourceName -> []string{tags,tags} resource field print conf
+	resourceConf map[string][]string
+
+	filterTags string
 }
 
 // NewPolarisPrint 构造
-func NewPolarisPrint(rs interface{}) *PolarisPrint {
+func NewPolarisPrint() *PolarisPrint {
 	return &PolarisPrint{
-		result: rs,
-		writer: tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape|tabwriter.AlignRight|tabwriter.Debug|tabwriter.TabIndent|tabwriter.DiscardEmptyColumns|tabwriter.TabIndent),
+		writer:       tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape|tabwriter.AlignRight|tabwriter.Debug|tabwriter.TabIndent|tabwriter.DiscardEmptyColumns|tabwriter.TabIndent),
+		resourceConf: map[string][]string{},
+		filterTags:   "|remove_user_ids|remove_group_ids|",
 	}
+}
+
+// Response set result
+func (p *PolarisPrint) Response(response interface{}) *PolarisPrint {
+	p.result = response
+	return p
+}
+
+// BatchQuery build batch query common tags
+func (p *PolarisPrint) BatchQuery() *PolarisPrint {
+	response := &service_manage.BatchQueryResponse{}
+	p.queryConf = findFieldNames("BatchQueryResponse", response, resourcesTags)
+	return p
+}
+
+// Resource set resource print conf
+func (p *PolarisPrint) ResourceConf(resource, value string) *PolarisPrint {
+	if len(value) == 0 {
+		return p
+	}
+	arr := strings.Split(value, ",")
+	for i, s := range arr {
+		arr[i] = strings.TrimSpace(s)
+	}
+	p.resourceConf[resource] = arr
+	return p
+}
+
+// BatchQuery build  write common tags
+func (p *PolarisPrint) Write() *PolarisPrint {
+	return p.BatchWrite()
+}
+
+// BatchQuery build batch write common tags
+func (p *PolarisPrint) BatchWrite() *PolarisPrint {
+	response := &service_manage.Response{}
+	p.writeConf = findFieldNames("Response", response, resourceTags)
+	return p
 }
 
 // Print 输出结果
@@ -53,12 +123,28 @@ func (p PolarisPrint) Print() {
 }
 
 func (p PolarisPrint) printResponse(response service_manage.Response) {
-	fmt.Println("print response unimpl")
+	defer p.writer.Flush()
+	fmt.Fprintln(p.writer, "\n======================  response   =================================\n")
+	fmt.Fprintf(p.writer, "code\tinfo\t\n")
+	fmt.Fprintf(p.writer, "%d\t%s\t\n", response.Code.Value, response.Info.Value)
+	fmt.Fprintln(p.writer, "\n======================  resource   =================================\n")
+	fmt.Fprintf(p.writer, "resource type\tresource name\tcode\tinfo\t\n")
+	for tagName, fieldName := range p.writeConf {
+		resValue := reflect.ValueOf(&response).Elem()
+		fieldValue := resValue.FieldByName(fieldName)
+		if fieldValue.IsNil() {
+			continue
+		}
+		p.resourceWriteResult(response.Code.Value, response.Info.Value, tagName, fieldValue.Interface())
+	}
 }
 
 func (p PolarisPrint) printBatchWriteResponse(response service_manage.BatchWriteResponse) {
+	defer p.writer.Flush()
+
 	fmt.Fprintln(p.writer, "====================== batch write result   =========================\n")
 	fmt.Fprintf(p.writer, "code\tinfo\tsize\tsucc_size\tfailed_size\t\n")
+
 	succWrite, failedWrite := 0, 0
 	for _, res := range response.Responses {
 		if res.Code.Value == uint32(model.Code_ExecuteSuccess) {
@@ -69,35 +155,37 @@ func (p PolarisPrint) printBatchWriteResponse(response service_manage.BatchWrite
 	}
 	fmt.Fprintf(p.writer, "%d\t%s\t%d\t%d\t%d\t\n", response.Code.Value, response.Info.Value, response.Size.Value, succWrite, failedWrite)
 
+	if len(response.Responses) == 0 {
+		return
+	}
+
 	fmt.Fprintln(p.writer, "\n======================  resources   =================================\n")
 	fmt.Fprintf(p.writer, "resource type\tresource name\tcode\tinfo\t\n")
-	for _, res := range response.Responses {
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "namespace", res.Namespace)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "service", res.Service)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "instance", res.Instance)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "routing", res.Routing)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "ratelimit", res.RateLimit)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "circuitBreaker", res.CircuitBreaker)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "user", res.User)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "userGroup", res.UserGroup)
-		p.printResWriteResult(res.Code.Value, res.Info.Value, "authStrategy", res.AuthStrategy)
+
+	for tagName, fieldName := range p.writeConf {
+		for _, res := range response.Responses {
+			resValue := reflect.ValueOf(res).Elem()
+			fieldValue := resValue.FieldByName(fieldName)
+			if fieldValue.IsNil() {
+				continue
+			}
+			p.resourceWriteResult(res.Code.Value, res.Info.Value, tagName, fieldValue.Interface())
+		}
 	}
 
 	p.writer.Flush()
 }
 
-func (p PolarisPrint) printResWriteResult(code uint32, info string, rsTypeName string, rs interface{}) {
-	if rs == nil {
-		return
-	}
-	value := reflect.ValueOf(rs)
-	if !value.IsValid() || value.IsNil() {
-		return
-	}
-	value = value.Elem()
-
-	field := value.FieldByName("Name")
+// resourceWriteResult print resource writ result
+func (p PolarisPrint) resourceWriteResult(code uint32, info string, rsTypeName string, rs interface{}) {
 	fmt.Fprintf(p.writer, "%s\t", rsTypeName)
+	value := reflect.ValueOf(rs).Elem()
+	var field reflect.Value
+	if rsTypeName == "Alias" {
+		field = value.FieldByName("Name")
+	} else {
+		field = value.FieldByName("Alias")
+	}
 	if field.IsValid() {
 		fmt.Fprintf(p.writer, "%s\t", field.Interface().(*wrapperspb.StringValue).GetValue())
 	} else {
@@ -108,32 +196,71 @@ func (p PolarisPrint) printResWriteResult(code uint32, info string, rsTypeName s
 	fmt.Fprintln(p.writer)
 }
 
+// printBatchQueryResponse print batch query response
 func (p PolarisPrint) printBatchQueryResponse(response service_manage.BatchQueryResponse) {
+
+	// batch query result
 	fmt.Println("====================== query response   =========================")
 	fmt.Fprintf(p.writer, "code\tinfo\tamount\tsize\t\n")
 	fmt.Fprintf(p.writer, "%d\t%s\t%d\t%d\t\n", response.Code.Value, response.Info.Value, response.Amount.Value, response.Size.Value)
 	p.writer.Flush()
 
-	if 0 != len(response.Namespaces) {
-		p.printNamespces(response.Namespaces)
+	// print resource with config
+	resValue := reflect.ValueOf(&response).Elem()
+	for tagName, fieldName := range p.queryConf {
+		fieldValue := resValue.FieldByName(fieldName)
+		if fieldValue.IsNil() {
+			continue
+		}
+
+		if fieldValue.Type().Kind() != reflect.Slice {
+			continue
+		}
+
+		if fieldValue.Len() == 0 {
+			continue
+		}
+		p.resources(tagName, fieldValue)
 	}
 }
 
-func (p PolarisPrint) printRsTabHeader(rs interface{}) []string {
+// resourceTabHeader print resource tab header
+func (p PolarisPrint) resourceTabHeader(name string, resource interface{}) []string {
 
-	v := reflect.ValueOf(rs)
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	typeOfT := v.Type()
-
-	filedNum := v.NumField()
 	fieldNames := []string{}
+	// use conf
+	if _, ok := p.resourceConf[name]; ok && len(p.resourceConf[name]) != 0 {
+		tagFields := findFieldNames(name, resource, p.resourceConf[name])
+		for _, tag := range p.resourceConf[name] {
+			if fieldName, ok := tagFields[tag]; ok {
+				if strings.Contains(p.filterTags, "|"+tag+"|") {
+					continue
+				}
+				fmt.Fprintf(p.writer, "%s\t", tag)
+				fieldNames = append(fieldNames, fieldName)
+			}
+		}
+		fmt.Fprintln(p.writer)
+		return fieldNames
+	}
 
+	resValue := reflect.ValueOf(resource)
+	if resValue.Kind() == reflect.Ptr {
+		resValue = resValue.Elem()
+	}
+
+	resType := resValue.Type()
+
+	filedNum := resValue.NumField()
+
+	// print all field
 	for i := 0; i < filedNum; i++ {
-		tag := strings.Split(typeOfT.Field(i).Tag.Get("json"), ",")[0]
-		name := typeOfT.Field(i).Name
-		if tag == "" {
+		tag := strings.Split(resType.Field(i).Tag.Get("json"), ",")[0]
+		name := resType.Field(i).Name
+		if tag == "" || tag == "-" {
+			continue
+		}
+		if strings.Contains(p.filterTags, "|"+tag+"|") {
 			continue
 		}
 		fmt.Fprintf(p.writer, "%s\t", tag)
@@ -144,7 +271,8 @@ func (p PolarisPrint) printRsTabHeader(rs interface{}) []string {
 	return fieldNames
 }
 
-func (p PolarisPrint) printRs(rs interface{}, fieldNames []string) {
+// resource print resource message
+func (p PolarisPrint) resource(rs interface{}, fieldNames []string) {
 	value := reflect.ValueOf(rs).Elem()
 	for _, name := range fieldNames {
 		field := value.FieldByName(name)
@@ -171,21 +299,44 @@ func (p PolarisPrint) printRs(rs interface{}, fieldNames []string) {
 	fmt.Fprintln(p.writer)
 }
 
-func (p PolarisPrint) printNamespces(nas []*model.Namespace) {
-	fmt.Fprintln(p.writer, "\n======================    namespaces    =========================")
-
-	names := p.printRsTabHeader(nas[0])
+// resources print resource slice message
+func (p PolarisPrint) resources(resourcesName string, resources reflect.Value) {
+	fmt.Fprintf(p.writer, "\n======================    %s    =========================\n", resourcesName)
+	names := p.resourceTabHeader(resourcesName, resources.Index(0).Interface())
 	// 遍历 namespaces 并输出每个消息
-	for _, ns := range nas {
-		p.printRs(ns, names)
+	for i := 0; i < resources.Len(); i++ {
+		p.resource(resources.Index(i).Interface(), names)
 	}
 	p.writer.Flush()
 }
 
-func (p PolarisPrint) printServices() {
-	fmt.Println("\n======================    services    =========================")
-}
+// findFieldNames find tag fieldName
+func findFieldNames(msg string, response interface{}, tagNames []string) map[string]string {
 
-func (p PolarisPrint) printInstances() {
-	fmt.Println("\n======================    instances    =========================")
+	fieldNames := map[string]string{}
+
+	resType := reflect.TypeOf(response).Elem()
+	filedNum := resType.NumField()
+
+	for _, tagName := range tagNames {
+		for i := 0; i < filedNum; i++ {
+			tag := strings.Split(resType.Field(i).Tag.Get("json"), ",")[0]
+			if tag == "" {
+				fmt.Printf("[polarisctl internal sys err] cannot find tag %s in %s\n", tagName, msg)
+				continue
+			}
+			if tag != tagName {
+				continue
+			}
+			fieldNames[tagName] = resType.Field(i).Name
+		}
+	}
+
+	// check fieldNames
+	for _, tagName := range tagNames {
+		if _, ok := fieldNames[tagName]; !ok {
+			fmt.Printf("[polarisctl internal sys err] cannot find tag %s in %s\n", tagName, msg)
+		}
+	}
+	return fieldNames
 }
