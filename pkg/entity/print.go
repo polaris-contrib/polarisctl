@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -84,7 +85,12 @@ func (p *PolarisPrint) ResourceConf(resource, value string) *PolarisPrint {
 	return p
 }
 
-// BatchQuery build  write common tags
+// Query build  query common tags
+func (p *PolarisPrint) Query() *PolarisPrint {
+	return p.BatchWrite()
+}
+
+// Write build  write common tags
 func (p *PolarisPrint) Write() *PolarisPrint {
 	return p.BatchWrite()
 }
@@ -127,15 +133,28 @@ func (p PolarisPrint) printResponse(response service_manage.Response) {
 	fmt.Fprintln(p.writer, "\n======================  response   =================================\n")
 	fmt.Fprintf(p.writer, "code\tinfo\t\n")
 	fmt.Fprintf(p.writer, "%d\t%s\t\n", response.Code.Value, response.Info.Value)
+
 	fmt.Fprintln(p.writer, "\n======================  resource   =================================\n")
 	fmt.Fprintf(p.writer, "resource type\tresource name\tcode\tinfo\t\n")
 	for tagName, fieldName := range p.writeConf {
+		if tagName == "instanceLabels" {
+			continue
+		}
 		resValue := reflect.ValueOf(&response).Elem()
 		fieldValue := resValue.FieldByName(fieldName)
 		if fieldValue.IsNil() {
 			continue
 		}
 		p.resourceWriteResult(response.Code.Value, response.Info.Value, tagName, fieldValue.Interface())
+	}
+
+	// TODO(karlyzhang): 将资源的输出插件化，为特殊的资源制定特殊的输出格式
+	if fieldName, ok := p.writeConf["instanceLabels"]; ok {
+		resValue := reflect.ValueOf(&response).Elem()
+		fieldValue := resValue.FieldByName(fieldName)
+		if !fieldValue.IsNil() {
+			p.instanceLabels(fieldValue.Interface().(*service_manage.InstanceLabels))
+		}
 	}
 }
 
@@ -178,19 +197,29 @@ func (p PolarisPrint) printBatchWriteResponse(response service_manage.BatchWrite
 
 // resourceWriteResult print resource writ result
 func (p PolarisPrint) resourceWriteResult(code uint32, info string, rsTypeName string, rs interface{}) {
+	// TODO(karlyzhang)	插件化不同资源的输出格式
 	fmt.Fprintf(p.writer, "%s\t", rsTypeName)
 	value := reflect.ValueOf(rs).Elem()
 	var field reflect.Value
+	str := "<unkown>"
 	if rsTypeName == "Alias" {
 		field = value.FieldByName("Name")
+		str = field.Interface().(*wrapperspb.StringValue).GetValue()
+	} else if rsTypeName == "instance" {
+		host := value.FieldByName("Host")
+		port := value.FieldByName("Port")
+		portStr := strconv.FormatUint(uint64(port.Interface().(*wrapperspb.UInt32Value).GetValue()), 10)
+		hostStr := host.Interface().(*wrapperspb.StringValue).GetValue()
+		str = hostStr + ":" + portStr
 	} else {
 		field = value.FieldByName("Alias")
+		str = field.Interface().(*wrapperspb.StringValue).GetValue()
 	}
-	if field.IsValid() {
-		fmt.Fprintf(p.writer, "%s\t", field.Interface().(*wrapperspb.StringValue).GetValue())
-	} else {
-		fmt.Fprintf(p.writer, "<unkown>\t")
-	}
+
+	//if field.IsValid() {
+	//	str = field.Interface().(*wrapperspb.StringValue).GetValue()
+	//}
+	fmt.Fprintf(p.writer, "%s\t", str)
 	fmt.Fprintf(p.writer, "%d\t", code)
 	fmt.Fprintf(p.writer, "%s\t", info)
 	fmt.Fprintln(p.writer)
@@ -339,4 +368,12 @@ func findFieldNames(msg string, response interface{}, tagNames []string) map[str
 		}
 	}
 	return fieldNames
+}
+
+func (p *PolarisPrint) instanceLabels(labels *service_manage.InstanceLabels) {
+	fmt.Fprintln(p.writer, "\n======================  labels   =================================\n")
+	fmt.Fprintf(p.writer, "label\tvalue\t\n")
+	for label, values := range labels.Labels {
+		fmt.Fprintf(p.writer, "%s\t%v\t\n", label, values.Values)
+	}
 }

@@ -1,0 +1,16 @@
+[{
+        "service": "polarisctl_test_svr1",
+        "namespace": "default",
+        "host": "172.0.0.100"
+    },
+    {
+        "service": "polarisctl_test_svr2",
+        "namespace": "default",
+        "host": "172.0.0.100"
+    },
+    {
+        "service": "polarisctl_test_svr1",
+        "namespace": "default",
+        "host": "172.0.0.101"
+    }
+]

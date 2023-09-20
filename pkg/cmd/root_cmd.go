@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/0226zy/polarisctl/pkg/cmd/instances"
 	"github.com/0226zy/polarisctl/pkg/cmd/namespaces"
+	"github.com/0226zy/polarisctl/pkg/cmd/routings"
 	"github.com/0226zy/polarisctl/pkg/cmd/services"
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
@@ -59,6 +61,8 @@ func NewDefaultPolarisCommand() *cobra.Command {
 	root.AddCommand(namespaces.NewCmdNamespaces())
 	root.AddCommand(services.NewCmdServices())
 	root.AddCommand(services.NewCmdAlias())
+	root.AddCommand(instances.NewCmdInstances())
+	root.AddCommand(routings.NewCmdRoutings())
 	return root
 }
 

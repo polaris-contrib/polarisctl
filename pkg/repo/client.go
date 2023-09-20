@@ -21,6 +21,7 @@ type ResourceName = string
 
 // url_v1 polaris api v1 url
 const v1Api string = "/naming/v1/"
+const v2Api string = "/naming/v2/"
 const (
 	//KNamespaceUrl namespaces 操作的 url 前缀
 	API_NAMESPACES    ResourceAPI = v1Api + "namespaces"
@@ -35,12 +36,27 @@ const (
 	API_ALIAS     ResourceAPI = v1Api + "service/alias"
 	API_ALIASLIST ResourceAPI = v1Api + "service/aliases"
 	API_ALIASDEL  ResourceAPI = v1Api + "service/aliases/delete"
+
+	// instances
+	API_INSTANCES              ResourceAPI = v1Api + "instances"
+	API_INSTANCES_DEL          ResourceAPI = v1Api + "instances/delete"
+	API_INSTANCES_COUNT        ResourceAPI = v1Api + "instances/count"
+	API_INSTANCES_LABELS       ResourceAPI = v1Api + "instances/labels"
+	API_INSTANCES_HOST_DEL     ResourceAPI = v1Api + "instances/delete/host"
+	API_INSTANCES_HOST_ISOLATE ResourceAPI = v1Api + "instances/isolate/host"
+
+	// routings
+	API_ROUTINGS        ResourceAPI = v2Api + "routings"
+	API_ROUTINGS_DEL    ResourceAPI = v2Api + "routings/delete"
+	API_ROUTINGS_ENABLE ResourceAPI = v2Api + "routings/enable"
 )
 
 const (
 	RS_NAMESPACES ResourceName = "namespace"
 	RS_SERVICES   ResourceName = "service"
 	RS_ALIAS      ResourceName = "alias"
+	RS_INSTANCES  ResourceName = "instances"
+	RS_ROUTINGS   ResourceName = "routings"
 )
 
 // ApiClient http 请求处理

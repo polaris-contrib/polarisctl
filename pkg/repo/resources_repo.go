@@ -121,11 +121,22 @@ func (rsRepo ResourceRepo) write() {
 func (rsRepo ResourceRepo) get() {
 	body := rsRepo.client.Get()
 
-	var response service_manage.BatchQueryResponse
+	if rsRepo.batch {
+
+		var response service_manage.BatchQueryResponse
+		err := jsonpb.Unmarshal(bytes.NewReader(body), &response)
+		if err != nil {
+			fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
+			return
+		}
+		rsRepo.ctlPrint.Response(response).BatchQuery().Print()
+		return
+	}
+	var response service_manage.Response
 	err := jsonpb.Unmarshal(bytes.NewReader(body), &response)
 	if err != nil {
 		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
 		return
 	}
-	rsRepo.ctlPrint.Response(response).BatchQuery().Print()
+	rsRepo.ctlPrint.Response(response).Query().Print()
 }

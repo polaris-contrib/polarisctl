@@ -1,0 +1,14 @@
+[{
+    "service": "polarisctl_test_svr1",
+    "namespace": "default",
+    "host": "127.0.0.2",
+    "port": 8089,
+    "location": {
+        "region": "ap-guangzhou",
+        "zone": "ap-guangzhou-3",
+        "campus": ""
+    },
+    "metadata": {
+        "env": "pre"
+    }
+}]
