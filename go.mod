@@ -3,7 +3,6 @@ module github.com/0226zy/polarisctl
 go 1.20
 
 require (
-	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.3
 	github.com/polarismesh/specification v1.4.0
 	github.com/spf13/cobra v1.7.0

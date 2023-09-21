@@ -1,0 +1,26 @@
+[{
+    "name": "polarisctl-test-routing-1",
+    "namespace": "",
+    "enable": true,
+    "routing_policy": "RulePolicy",
+    "routing_config": {
+        "@type": "type.googleapis.com/v1.RuleRoutingConfig",
+        "rules": [{
+            "name": "规则一",
+            "sources": [{
+                "service": "echo",
+                "namespace": "default",
+                "arguments": [{
+                    "type": "CUSTOM",
+                    "key": "uid",
+                    "value": {
+                        "type": "EXACT",
+                        "value": "123",
+                        "value_type": "TEXT"
+                    }
+                }]
+            }],
+            "destinations": []
+        }]
+    }
+}]

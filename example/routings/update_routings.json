@@ -1,0 +1,44 @@
+[{
+    "id": "1d854447cb034974b4d4ca941e63cb97 ",
+    "name": "polarisctl-test-routing-1",
+    "enable": true,
+    "priority": 0,
+    "routing_policy": "RulePolicy",
+    "routing_config": {
+        "@type": "type.googleapis.com/v2.RuleRoutingConfig",
+        "sources": [{
+            "service": "*",
+            "namespace": "*",
+            "arguments": []
+        }],
+        "destinations": [{
+                "service": "code-trans-demo-100026380639",
+                "namespace": "default",
+                "labels": {
+                    "VERSION": {
+                        "value": "v1",
+                        "type": "EXACT"
+                    }
+                },
+                "weight": 50,
+                "priority": 0,
+                "name": "group-1",
+                "isolate": false
+            },
+            {
+                "service": "code-trans-demo-100026380639",
+                "namespace": "default",
+                "labels": {
+                    "VERSION": {
+                        "value": "v2",
+                        "type": "EXACT"
+                    }
+                },
+                "weight": 50,
+                "priority": 0,
+                "name": "group-2",
+                "isolate": false
+            }
+        ]
+    }
+}]

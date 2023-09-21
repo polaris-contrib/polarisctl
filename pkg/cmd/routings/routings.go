@@ -45,7 +45,7 @@ func NewCmdRoutingsList() *cobra.Command {
 		Short: "list routings",
 		Long:  "list routings",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("routings", routingsFields)
+			print := entity.NewPolarisPrint().ResourceConf("v1.RouteRule", routingsFields).V2Api("routings")
 			rsRepo := repo.NewResourceRepo(repo.RS_ROUTINGS, repo.API_ROUTINGS)
 			rsRepo.Method("GET").Param(listParam.Encode()).Print(print).Build()
 		},
@@ -63,8 +63,9 @@ func NewCmdRoutingsCreate() *cobra.Command {
 		Short: "create (-f create_routings.json)",
 		Long:  "create (-f create_routings.json)",
 		Run: func(cmd *cobra.Command, args []string) {
+			print := entity.NewPolarisPrint().ResourceConf("v1.RouteRule", routingsFields).V2Api("v1.RouteRule")
 			rsRepo := repo.NewResourceRepo(repo.RS_ROUTINGS, repo.API_ROUTINGS)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo.Method("POST").File(fileName).Print(print).Build()
 		},
 	}
 
@@ -79,8 +80,9 @@ func NewCmdRoutingsUpdate() *cobra.Command {
 		Short: "update (-f update_routings.json)",
 		Long:  "update (-f update_routings.json)",
 		Run: func(cmd *cobra.Command, args []string) {
+			print := entity.NewPolarisPrint().ResourceConf("v1.RouteRule", routingsFields).V2Api("v1.RouteRule")
 			rsRepo := repo.NewResourceRepo(repo.RS_ROUTINGS, repo.API_ROUTINGS)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo.Method("PUT").File(fileName).Print(print).Build()
 		},
 	}
 
@@ -95,8 +97,9 @@ func NewCmdRoutingsEnable() *cobra.Command {
 		Short: "enable (-f enable_routings.json)",
 		Long:  "enable (-f enable_routings.json)",
 		Run: func(cmd *cobra.Command, args []string) {
+			print := entity.NewPolarisPrint().ResourceConf("v1.RouteRule", routingsFields).V2Api("v1.RouteRule")
 			rsRepo := repo.NewResourceRepo(repo.RS_ROUTINGS, repo.API_ROUTINGS_ENABLE)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo.Method("PUT").File(fileName).Print(print).Build()
 		},
 	}
 
@@ -111,8 +114,9 @@ func NewCmdRoutingsDelete() *cobra.Command {
 		Short: "delete (-f delete_routings.json)",
 		Long:  "delete (-f delete_routings.json)",
 		Run: func(cmd *cobra.Command, args []string) {
+			print := entity.NewPolarisPrint().ResourceConf("v1.RouteRule", routingsFields).V2Api("v1.RouteRule")
 			rsRepo := repo.NewResourceRepo(repo.RS_ROUTINGS, repo.API_ROUTINGS_DEL)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo.Method("POST").File(fileName).Print(print).Build()
 		},
 	}
 
