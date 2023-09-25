@@ -20,43 +20,103 @@ type ResourceAPI = string
 type ResourceName = string
 
 // url_v1 polaris api v1 url
-const v1Api string = "/naming/v1/"
-const v2Api string = "/naming/v2/"
+const namingV1Api string = "/naming/v1/"
+const namingV2Api string = "/naming/v2/"
+
+const confV1Api string = "/config/v1/"
+const coreV1API string = "/core/v1/"
+const maintainV1API string = "/maintain/v1/"
 const (
 	//KNamespaceUrl namespaces 操作的 url 前缀
-	API_NAMESPACES    ResourceAPI = v1Api + "namespaces"
-	API_NAMESPACESDEL ResourceAPI = v1Api + "namespaces/delete"
+	API_NAMESPACES    ResourceAPI = namingV1Api + "namespaces"
+	API_NAMESPACESDEL ResourceAPI = namingV1Api + "namespaces/delete"
 
 	// service
-	API_SERVICES    ResourceAPI = v1Api + "services"
-	API_SERVICESALL ResourceAPI = v1Api + "services/all"
-	API_SERVICESDEL ResourceAPI = v1Api + "services/delete"
+	API_SERVICES    ResourceAPI = namingV1Api + "services"
+	API_SERVICESALL ResourceAPI = namingV1Api + "services/all"
+	API_SERVICESDEL ResourceAPI = namingV1Api + "services/delete"
 
 	// service alias
-	API_ALIAS     ResourceAPI = v1Api + "service/alias"
-	API_ALIASLIST ResourceAPI = v1Api + "service/aliases"
-	API_ALIASDEL  ResourceAPI = v1Api + "service/aliases/delete"
+	API_ALIAS     ResourceAPI = namingV1Api + "service/alias"
+	API_ALIASLIST ResourceAPI = namingV1Api + "service/aliases"
+	API_ALIASDEL  ResourceAPI = namingV1Api + "service/aliases/delete"
 
 	// instances
-	API_INSTANCES              ResourceAPI = v1Api + "instances"
-	API_INSTANCES_DEL          ResourceAPI = v1Api + "instances/delete"
-	API_INSTANCES_COUNT        ResourceAPI = v1Api + "instances/count"
-	API_INSTANCES_LABELS       ResourceAPI = v1Api + "instances/labels"
-	API_INSTANCES_HOST_DEL     ResourceAPI = v1Api + "instances/delete/host"
-	API_INSTANCES_HOST_ISOLATE ResourceAPI = v1Api + "instances/isolate/host"
+	API_INSTANCES              ResourceAPI = namingV1Api + "instances"
+	API_INSTANCES_DEL          ResourceAPI = namingV1Api + "instances/delete"
+	API_INSTANCES_COUNT        ResourceAPI = namingV1Api + "instances/count"
+	API_INSTANCES_LABELS       ResourceAPI = namingV1Api + "instances/labels"
+	API_INSTANCES_HOST_DEL     ResourceAPI = namingV1Api + "instances/delete/host"
+	API_INSTANCES_HOST_ISOLATE ResourceAPI = namingV1Api + "instances/isolate/host"
 
 	// routings
-	API_ROUTINGS        ResourceAPI = v2Api + "routings"
-	API_ROUTINGS_DEL    ResourceAPI = v2Api + "routings/delete"
-	API_ROUTINGS_ENABLE ResourceAPI = v2Api + "routings/enable"
+	API_ROUTINGS        ResourceAPI = namingV2Api + "routings"
+	API_ROUTINGS_DEL    ResourceAPI = namingV2Api + "routings/delete"
+	API_ROUTINGS_ENABLE ResourceAPI = namingV2Api + "routings/enable"
+
+	// circuitbreaker
+	API_CIRCUITBREAKER        ResourceAPI = namingV1Api + "circuitbreaker/rules"
+	API_CIRCUITBREAKER_DEL    ResourceAPI = namingV1Api + "circuitbreaker/delete"
+	API_CIRCUITBREAKER_ENABLE ResourceAPI = namingV1Api + "circuitbreaker/rules/enable"
+
+	// ratelimits
+	API_RATELIMITS        ResourceAPI = namingV1Api + "ratelimits"
+	API_RATELIMITS_DEL    ResourceAPI = namingV1Api + "ratelimits/delete"
+	API_RATELIMITS_ENABLE ResourceAPI = namingV1Api + "ratelimits/enable"
+
+	// faultdetectors
+	API_FAULTDETECTORS     ResourceAPI = namingV1Api + "faultdetectors"
+	API_FAULTDETECTORS_DEL ResourceAPI = namingV1Api + "faultdetectors/delete"
+
+	// contracts
+	API_CONTRACTS               ResourceAPI = namingV1Api + "service/contracts"
+	API_CONTRACTS_DEL           ResourceAPI = namingV1Api + "service/contracts/delete"
+	API_CONTRACTS_METHOD_DEL    ResourceAPI = namingV1Api + "service/contract/method/delete"
+	API_CONTRACTS_METHOD_APPEND ResourceAPI = namingV1Api + "service/contract/methods/append"
+	API_CONTRACTS_METHOD        ResourceAPI = namingV1Api + "service/contract/methods"
+
+	// configfiles
+	API_CONFIGFILES         ResourceAPI = confV1Api + "configfiles"
+	API_CONFIGFILES_DEL     ResourceAPI = confV1Api + "configfiles/batchdelete"
+	API_CONFIGFILES_EXPORT  ResourceAPI = confV1Api + "configfiles/export"
+	API_CONFIGFILES_IMPORT  ResourceAPI = confV1Api + "configfiles/import"
+	API_CONFIGFILES_BYGROUP ResourceAPI = confV1Api + "configfiles/by-group"
+	API_CONFIGFILES_SEARCH  ResourceAPI = confV1Api + "configfiles/search"
+	API_CONFIGFILES_PUB     ResourceAPI = confV1Api + "configfiles/createandpub"
+
+	// configgroup
+	API_CONFIGGROUPS     ResourceAPI = confV1Api + "configfilegroups"
+	API_CONFIGGROUPS_DEL ResourceAPI = confV1Api + "configfilegroups/delete"
+
+	// config release
+	API_RELEASE      ResourceAPI = confV1Api + "configfiles/release"
+	API_RELEASES     ResourceAPI = confV1Api + "configfiles/releases"
+	API_RELEASE_VER  ResourceAPI = confV1Api + "configfiles/releases/versions"
+	API_RELEASE_ROLL ResourceAPI = confV1Api + "configfiles/releases/rollback"
+	API_RELEASE_DEL  ResourceAPI = confV1Api + "configfiles/releases/delete"
+	API_RELEASE_HIST ResourceAPI = confV1Api + "configfiles/releasehistory"
+
+	// maintain
+	API_MAINTAIN_LOG    ResourceAPI = maintainV1API + "log/outputlevel"
+	API_MAINTAIN_LEADER ResourceAPI = maintainV1API + "leaders"
+	API_MAINTAIN_CMDB   ResourceAPI = maintainV1API + "cmdb/info"
+	API_MAINTAIN_CLIENT ResourceAPI = maintainV1API + "report/clients"
 )
 
 const (
-	RS_NAMESPACES ResourceName = "namespace"
-	RS_SERVICES   ResourceName = "service"
-	RS_ALIAS      ResourceName = "alias"
-	RS_INSTANCES  ResourceName = "instances"
-	RS_ROUTINGS   ResourceName = "routings"
+	RS_NAMESPACES     ResourceName = "namespace"
+	RS_SERVICES       ResourceName = "service"
+	RS_ALIAS          ResourceName = "alias"
+	RS_INSTANCES      ResourceName = "instances"
+	RS_ROUTINGS       ResourceName = "routings"
+	RS_CIRCUITBREAKER ResourceName = "circuitbreaker"
+	RS_RATELIMITS     ResourceName = "ratelimits"
+	RS_FAULTDETECTORS ResourceName = "faultdetectors"
+	RS_CONTRACTS      ResourceName = "contracts"
+	RS_CONFIGGROUP    ResourceName = "configgroups"
+	RS_CONFIGFILES    ResourceName = "configfiles"
+	RS_RELEASE        ResourceName = "release"
+	RS_MAINTAIN       ResourceName = "maintain"
 )
 
 // ApiClient http 请求处理

@@ -264,7 +264,7 @@ func (p PolarisPrint) printBatchQueryResponse(response service_manage.BatchQuery
 				fmt.Fprintln(p.writer, strings.Repeat("-", len(fieldNames)*10))
 				p.writer.Flush()
 			}
-			p.resource(resource, fieldNames)
+			p.resourcev2(resource, fieldNames)
 
 		}
 		return
@@ -367,7 +367,93 @@ func (p PolarisPrint) resourceTabHeader(name string, resource interface{}) []str
 	return fieldNames
 }
 
-// resource print resource message
+func (p PolarisPrint) resourcev2(rs interface{}, fieldNames []string) {
+	value := reflect.ValueOf(rs).Elem()
+
+	for _, name := range fieldNames {
+		field := value.FieldByName(name)
+		// 输出字段值
+		switch field.Kind() {
+		case reflect.Ptr:
+			p.printPtr(name, field)
+		case reflect.Slice:
+			var sb strings.Builder
+			for i := 0; i < field.Len(); i++ {
+				//elem := field.Index(i).Interface()
+				elem := field.Index(i)
+				if i > 0 {
+					sb.WriteString(",")
+				}
+				sb.WriteString(p.fetchFieldValue(elem))
+			}
+			sb.WriteString("\t")
+			fmt.Fprint(p.writer, sb.String())
+		case reflect.String, reflect.Bool, reflect.Int, reflect.Int32, reflect.Int64, reflect.Uint32, reflect.Uint64:
+			fmt.Fprintf(p.writer, "%v\t", field.Interface())
+		case reflect.Map:
+			fmt.Fprintf(p.writer, "%v\t", field.Interface())
+		case reflect.Struct:
+			fmt.Fprintf(p.writer, "%v\t", field.Interface())
+		default:
+			fmt.Fprintf(p.writer, "<unkown type,t:%T k:%v>\t", field.Interface(), field.Kind())
+		}
+	}
+	fmt.Fprintln(p.writer)
+}
+
+// func (p *PolarisPrint) fetchFieldValue(elem interface{}) string {
+func (p *PolarisPrint) fetchFieldValue(elem reflect.Value) string {
+
+	return fmt.Sprintf("elem %T %v", elem.Interface(), elem.Kind())
+	//switch v := elem.(type) {
+	//	case *wrapperspb.StringValue:
+	//		return v.GetValue()
+	//	case *wrapperspb.Int32Value:
+	//		return v.GetValue()
+	//	case *string:
+	//		return *v
+	//	case *int:
+	//		return strconv.Itoa(*v)
+	//	default:
+	//		return fmt.Sprintf("%v", v)
+	//	}
+}
+
+func (p PolarisPrint) printPtr(name string, field reflect.Value) {
+	if !field.IsValid() || field.IsZero() {
+		fmt.Fprintf(p.writer, "null\t")
+		return
+	}
+	v := field.Interface()
+	switch v := v.(type) {
+	case *wrapperspb.StringValue:
+		fmt.Fprintf(p.writer, "%s\t", v.GetValue())
+	case *wrapperspb.BoolValue, *wrapperspb.UInt32Value:
+		fmt.Fprintf(p.writer, "%v\t", reflect.ValueOf(v).Elem().FieldByName("Value").Interface())
+	case []*wrapperspb.StringValue:
+		stringValues := field.Interface().([]*wrapperspb.StringValue)
+		for j, strValue := range stringValues {
+			if j > 0 {
+				fmt.Fprint(p.writer, ",")
+			}
+			fmt.Fprint(p.writer, strValue.GetValue())
+		}
+		fmt.Fprint(p.writer, "\t")
+	case *anypb.Any:
+		err, _, resource := unmarshalAny(v)
+		if err == nil {
+			fmt.Fprintf(p.writer, "%+v\t", resource)
+		} else {
+			fmt.Fprintf(p.writer, "%s,%v,<err:%v>\t", v, err)
+		}
+	default:
+		if field.Type().Elem().Kind() == reflect.Struct {
+			fmt.Fprintf(p.writer, "%v\t", v)
+		} else {
+			fmt.Fprintf(p.writer, "<unkown type,t:%T k:%v>\t", field.Type(), field.Type().Kind())
+		}
+	}
+}
 func (p PolarisPrint) resource(rs interface{}, fieldNames []string) {
 	value := reflect.ValueOf(rs).Elem()
 	for _, name := range fieldNames {
@@ -413,7 +499,7 @@ func (p PolarisPrint) resource(rs interface{}, fieldNames []string) {
 				fmt.Fprintf(p.writer, "%v\t", v)
 			} else {
 				//fmt.Printf("name:%s fieldType:%T unkown\n", name, field.Type())
-				fmt.Fprintf(p.writer, "%s,%v,<unkown type>\t", v, field.Type())
+				fmt.Fprintf(p.writer, "<unkown type,t:%T k:%v>\t", field.Type(), field.Type().Kind())
 			}
 
 		}
@@ -427,7 +513,7 @@ func (p PolarisPrint) resources(resourcesName string, resources reflect.Value) {
 	names := p.resourceTabHeader(resourcesName, resources.Index(0).Interface())
 	// 遍历 namespaces 并输出每个消息
 	for i := 0; i < resources.Len(); i++ {
-		p.resource(resources.Index(i).Interface(), names)
+		p.resourcev2(resources.Index(i).Interface(), names)
 	}
 	p.writer.Flush()
 }

@@ -1,0 +1,28 @@
+[{
+    "id": "c5e9f0ebcc6643cda545b26ca30b554e",
+    "name": "polarisctl-test-ratelimit",
+    "service": "polarisctl-test-svr1",
+    "namespace": "default",
+    "amounts": [{
+        "maxAmount": 200,
+        "precision": 1,
+        "validDuration": "1s",
+        "startAmount": 0,
+        "minAmount": 0
+    }],
+    "arguments": [{
+        "key": "test-1",
+        "type": "CUSTOM",
+        "value": {
+            "type": "EXACT",
+            "value": "test",
+            "value_type": "TEXT"
+        }
+    }],
+    "disable": true,
+    "failover": "FAILOVER_LOCAL",
+    "max_queue_delay": 0,
+    "priority": 0,
+    "regex_combine": false,
+    "type": "GLOBAL"
+}]

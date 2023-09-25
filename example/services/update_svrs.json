@@ -1,6 +1,5 @@
-{
-    "service": "polarisctl_test_svr1",
+[{
+    "name": "polarisctl_test_svr1",
     "namespace": "default",
-    "alias": "polarisctl_test_svr1_alias1",
-    "alias_namespace": "Polaris"
-}
+    "user_ids": ["08806add0ba24d6794d343b59467f1cc", "d060c44a5fc64cbe99c2245de26ab4b1"]
+}]

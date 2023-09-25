@@ -6,8 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/0226zy/polarisctl/pkg/cmd/circuitbreaker"
+	"github.com/0226zy/polarisctl/pkg/cmd/config"
+	"github.com/0226zy/polarisctl/pkg/cmd/faultdetectors"
 	"github.com/0226zy/polarisctl/pkg/cmd/instances"
+	"github.com/0226zy/polarisctl/pkg/cmd/maintain"
 	"github.com/0226zy/polarisctl/pkg/cmd/namespaces"
+	"github.com/0226zy/polarisctl/pkg/cmd/ratelimits"
 	"github.com/0226zy/polarisctl/pkg/cmd/routings"
 	"github.com/0226zy/polarisctl/pkg/cmd/services"
 	"github.com/0226zy/polarisctl/pkg/entity"
@@ -63,6 +68,11 @@ func NewDefaultPolarisCommand() *cobra.Command {
 	root.AddCommand(services.NewCmdAlias())
 	root.AddCommand(instances.NewCmdInstances())
 	root.AddCommand(routings.NewCmdRoutings())
+	root.AddCommand(circuitbreaker.NewCmdCircuitbreaker())
+	root.AddCommand(ratelimits.NewCmdRatelimits())
+	root.AddCommand(faultdetectors.NewCmdFaultdetectors())
+	root.AddCommand(config.NewCmdConfig())
+	root.AddCommand(maintain.NewCmdMaintain())
 	return root
 }
 

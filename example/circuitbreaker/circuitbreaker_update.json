@@ -1,0 +1,58 @@
+[{
+    "id": "6400adb1f77749529c7424c93875c0fe",
+    "level": "SERVICE",
+    "max_ejection_percent": 20,
+    "name": "polarisctl-test-circubreaker",
+    "namespace": "default",
+    "description": "polarisctl-test",
+    "enable": true,
+    "revision": "v2",
+    "error_conditions": [{
+        "condition": {
+            "type": "EXACT",
+            "value": "test-cir",
+            "value_type": "TEXT"
+        },
+        "input_type": "RET_CODE"
+    }],
+    "fallbackConfig": {
+        "enable": true,
+        "response": {
+            "body": "string",
+            "code": 0,
+            "headers": [{
+                "key": "string",
+                "value": "string"
+            }]
+        }
+    },
+    "faultDetectConfig": {
+        "enable": true
+    },
+    "recoverCondition": {
+        "consecutiveSuccess": 20,
+        "sleep_window": 10
+    },
+    "rule_matcher": {
+        "destination": {
+            "method": {
+                "type": "EXACT",
+                "value": "test-method",
+                "value_type": "TEXT"
+            },
+            "namespace": "default",
+            "service": "polarisctl-test-svr1"
+        },
+        "source": {
+            "namespace": "default",
+            "service": "polarisctl-test-svr1"
+        }
+    },
+    "trigger_condition": [{
+        "error_count": 120,
+        "error_percent": 30,
+        "interval": 2,
+        "minimum_request": 10,
+        "trigger_type": 1
+    }]
+}]

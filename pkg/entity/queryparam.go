@@ -52,7 +52,7 @@ type LabelQueryParam struct {
 
 // RoutingsQueryParam routings 查询参数
 type RoutingsQueryParam struct {
-	Id                   string `param:"id",short:"instances id"`
+	ID                   string `param:"id",short:"instances id"`
 	Namespace            string `param:"namespace",short:"namespace name"`
 	Service              string `param:"service",short:"service name"`
 	Enable               string `param:"enable",short:"host name"`
@@ -62,6 +62,100 @@ type RoutingsQueryParam struct {
 	DestinationNamespace string `param:"destination_namespace",short:"host name"`
 	OrderField           string `param:"order_field",short:"host name"`
 	OrderType            string `param:"order_type",short:"host name"`
+}
+
+// RatelimitsQueryParam
+type RatelimitsQueryParam struct {
+	Brief     string `param:"brief"`
+	Disable   string `param:"disable"`
+	ID        string `param:"id"`
+	Method    string `param:"method"`
+	Name      string `param:"name"`
+	Namespace string `param:"namespace"`
+	Service   string `param:"service"`
+}
+
+// CircuitbreakerQueryParam
+type CircuitbreakerQueryParam struct {
+	Brief            string `param:"brief"`
+	DstMethod        string `param:"dstMethod"`
+	DstNamespace     string `param:"dstNamespace"`
+	DstService       string `param:"dstService"`
+	Enable           string `param:"enable"`
+	ID               string `param:"id"`
+	Level            string `param:"level"`
+	Name             string `param:"name"`
+	Service          string `param:"service"`
+	ServiceNamespace string `param:"serviceNamespace"`
+	SrcNamespace     string `param:"srcNamespace"`
+	SrcService       string `param:"srcService"`
+}
+
+// ConfigfilesSearchParam
+type ConfigfileSearchParam struct {
+	Group     string `param:"group"`
+	Namespace string `param:"namespace"`
+}
+
+// ConfigfileQueryParam
+type ConfigfileQueryParam struct {
+	Group     string `param:"group"`
+	Namespace string `param:"namespace"`
+}
+
+// ConfiggroupQueryParam
+type ConfiggroupQueryParam struct {
+	Business   string `param:"business"`
+	Department string `param:"department"`
+	Name       string `param:"name"`
+	Namespace  string `param:"namespace"`
+	OrderField string `param:"order_field"`
+	OrderType  string `param:"order_type"`
+}
+
+// ReleaseQueryParam
+type ReleaseQueryParam struct {
+	FileName    string `param:"file_name"`
+	Group       string `param:"grup"`
+	Name        string `param:"name"`
+	Namespace   string `param:"namespace"`
+	OnlyActive  string `param:"only_active"`
+	OrderField  string `param:"order_field"`
+	OrderType   string `param:"order_type"`
+	ReleaseName string `param:"release_name"`
+}
+
+// ReleaseVersionQueryParam
+type ReleaseVersionQueryParam struct {
+	FileName  string `param:"file_name"`
+	Group     string `param:"group"`
+	Namespace string `param:"namespace"`
+}
+
+// ReleaseInfoQueryParam
+type ReleaseInfoQueryParam struct {
+	Group       string `param:"group"`
+	Name        string `param:"name"`
+	Namespace   string `param:"namespace"`
+	ReleaseName string `param:"release_name"`
+}
+
+// ReleaseHistoryQueryParam
+type ReleaseHistoryQueryParam struct {
+	Group     string `param:"group"`
+	Name      string `param:"name"`
+	Namespace string `param:"namespace"`
+}
+
+// FaultdetectorsQueryParam
+type FaultdetectorsQueryParam struct {
+	Brief            string `param:"brief"`
+	DstMethod        string `param:"dstMethod"`
+	DstNamespace     string `param:"dstNamespace"`
+	DstService       string `param:"dstService"`
+	ID               string `param:"id"`
+	Service          string `param:"service"`
+	ServiceNamespace string `param:"serviceNamespace"`
 }
 
 // InstancesQueryParam namespace 查询参数
