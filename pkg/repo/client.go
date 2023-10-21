@@ -28,18 +28,18 @@ const coreV1API string = "/core/v1/"
 const maintainV1API string = "/maintain/v1/"
 const (
 	//KNamespaceUrl namespaces 操作的 url 前缀
-	API_NAMESPACES    ResourceAPI = namingV1Api + "namespaces"
-	API_NAMESPACESDEL ResourceAPI = namingV1Api + "namespaces/delete"
+	API_NAMESPACES     ResourceAPI = namingV1Api + "namespaces"
+	API_NAMESPACES_DEL ResourceAPI = namingV1Api + "namespaces/delete"
 
 	// service
-	API_SERVICES    ResourceAPI = namingV1Api + "services"
-	API_SERVICESALL ResourceAPI = namingV1Api + "services/all"
-	API_SERVICESDEL ResourceAPI = namingV1Api + "services/delete"
+	API_SERVICES     ResourceAPI = namingV1Api + "services"
+	API_SERVICES_ALL ResourceAPI = namingV1Api + "services/all"
+	API_SERVICES_DEL ResourceAPI = namingV1Api + "services/delete"
 
 	// service alias
-	API_ALIAS     ResourceAPI = namingV1Api + "service/alias"
-	API_ALIASLIST ResourceAPI = namingV1Api + "service/aliases"
-	API_ALIASDEL  ResourceAPI = namingV1Api + "service/aliases/delete"
+	API_ALIAS      ResourceAPI = namingV1Api + "service/alias"
+	API_ALIAS_LIST ResourceAPI = namingV1Api + "service/aliases"
+	API_ALIAS_DEL  ResourceAPI = namingV1Api + "service/aliases/delete"
 
 	// instances
 	API_INSTANCES              ResourceAPI = namingV1Api + "instances"
@@ -56,7 +56,7 @@ const (
 
 	// circuitbreaker
 	API_CIRCUITBREAKER        ResourceAPI = namingV1Api + "circuitbreaker/rules"
-	API_CIRCUITBREAKER_DEL    ResourceAPI = namingV1Api + "circuitbreaker/delete"
+	API_CIRCUITBREAKER_DEL    ResourceAPI = namingV1Api + "circuitbreakers/delete"
 	API_CIRCUITBREAKER_ENABLE ResourceAPI = namingV1Api + "circuitbreaker/rules/enable"
 
 	// ratelimits
@@ -86,12 +86,12 @@ const (
 
 	// configgroup
 	API_CONFIGGROUPS     ResourceAPI = confV1Api + "configfilegroups"
-	API_CONFIGGROUPS_DEL ResourceAPI = confV1Api + "configfilegroups/delete"
+	API_CONFIGGROUPS_DEL ResourceAPI = confV1Api + "configfilegroups"
 
 	// config release
 	API_RELEASE      ResourceAPI = confV1Api + "configfiles/release"
 	API_RELEASES     ResourceAPI = confV1Api + "configfiles/releases"
-	API_RELEASE_VER  ResourceAPI = confV1Api + "configfiles/releases/versions"
+	API_RELEASE_VER  ResourceAPI = confV1Api + "configfiles/release/versions"
 	API_RELEASE_ROLL ResourceAPI = confV1Api + "configfiles/releases/rollback"
 	API_RELEASE_DEL  ResourceAPI = confV1Api + "configfiles/releases/delete"
 	API_RELEASE_HIST ResourceAPI = confV1Api + "configfiles/releasehistory"
@@ -165,6 +165,14 @@ func (client *ApiClient) buildURL() {
 }
 
 // Put 更新/修改操作
+func (client *ApiClient) Delete(body io.Reader) []byte {
+	client.buildURL()
+	client.buildReq("DELETE", client.murl.String(), body)
+	client.req.Header.Add("Content-Type", "application/json")
+	return client.do()
+}
+
+// Put 更新/修改操作
 func (client *ApiClient) Put(body io.Reader) []byte {
 	client.buildURL()
 	client.buildReq("PUT", client.murl.String(), body)
@@ -204,7 +212,7 @@ func (client *ApiClient) do() []byte {
 	// send
 	res, err := client.httpClient.Do(client.req)
 	if err != nil {
-		fmt.Printf("[polarisctl internal sys err] http %s failed:%v\n", method, err)
+		fmt.Printf("[polarisctl internal sys err] http do %s failed:%v\n", method, err)
 		os.Exit(1)
 	}
 	defer res.Body.Close()
@@ -216,7 +224,7 @@ func (client *ApiClient) do() []byte {
 	// parse body
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("[polarisctl internal sys err] http %s failed:%v\n", method, err)
+		fmt.Printf("[polarisctl internal sys err] http %s read body failed:%v\n", method, err)
 		os.Exit(1)
 	}
 	if debuglog {

@@ -1,0 +1,5 @@
+[{
+    "service": "polarisctl_test_svr1-10-20-del",
+    "namespace": "default",
+    "host": "127.0.0.2"
+}]

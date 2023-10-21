@@ -1,0 +1,30 @@
+[{
+        "name": "polarisctl_test_svr1-10-20",
+        "namespace": "default",
+        "department": "",
+        "comment": "test polarisctl namespaces cmd",
+        "metadata": {},
+        "ports": "",
+        "user_ids": [],
+        "group_ids": []
+    }, {
+        "name": "polarisctl_test_svr1",
+        "namespace": "default",
+        "department": "",
+        "comment": "test polarisctl namespaces cmd",
+        "metadata": {},
+        "ports": "",
+        "user_ids": ["b0460ba67c1c4f618fed5bc583880a3c"],
+        "group_ids": []
+    },
+    {
+        "name": "polarisctl_test_svr2",
+        "namespace": "default",
+        "department": "",
+        "comment": "test polarisctl namespaces cmd",
+        "metadata": {},
+        "ports": "",
+        "user_ids": ["b0460ba67c1c4f618fed5bc583880a3c"],
+        "group_ids": []
+    }
+]

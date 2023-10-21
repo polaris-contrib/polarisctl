@@ -3,12 +3,13 @@ package ratelimits
 import (
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+
 	"github.com/spf13/cobra"
 )
 
-// fileName resource:ratelimits description file(format:josn) for create/delete/update
-var fileName string
-var ratelimitsFields string
+// resourceFile resource:ratelimits description file(format:josn) for create/delete/update
+var resourceFile string
+var resourceFields string
 
 // NewCmdRatelimits build ratelimits root cmd
 func NewCmdRatelimits() *cobra.Command {
@@ -18,8 +19,8 @@ func NewCmdRatelimits() *cobra.Command {
 		Long:  "ratelimits [list|create|update|enable|delete]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
-	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for create/update/enable/delete ratelimits")
-	cmd.PersistentFlags().StringVar(&ratelimitsFields, "print", "", "ratelimits print field")
+	cmd.PersistentFlags().StringVarP(&resourceFile, "file", "f", "", "json file for create/update/enable/delete ratelimits")
+	cmd.PersistentFlags().StringVar(&resourceFields, "print", "", "ratelimits print field,eg:\"jsontag1,jsontag2\"")
 
 	// query command
 	cmd.AddCommand(NewCmdRatelimitsList())
@@ -34,7 +35,7 @@ func NewCmdRatelimits() *cobra.Command {
 }
 
 // list param, eg: limit, offset
-var listParam entity.QueryParam
+var listRatelimitsParam entity.QueryParam
 var listRatelimitsQueryParam entity.RatelimitsQueryParam
 
 // NewCmdRatelimitsList build ratelimits list command
@@ -45,14 +46,19 @@ func NewCmdRatelimitsList() *cobra.Command {
 		Short: "list ratelimits",
 		Long:  "list ratelimits",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("rateLimits", ratelimitsFields)
-			rsRepo := repo.NewResourceRepo(repo.RS_RATELIMITS, repo.API_RATELIMITS)
-			rsRepo.Method("GET").Param(listParam.Encode()).Print(print).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_RATELIMITS,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(listRatelimitsParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
-	listParam.ResourceParam = &listRatelimitsQueryParam
-	listParam.RegisterFlag(cmd)
+	listRatelimitsParam.ResourceParam = &listRatelimitsQueryParam
+	listRatelimitsParam.RegisterFlag(cmd)
 	return cmd
 }
 
@@ -63,8 +69,14 @@ func NewCmdRatelimitsCreate() *cobra.Command {
 		Short: "create (-f create_ratelimits.json)",
 		Long:  "create (-f create_ratelimits.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_RATELIMITS, repo.API_RATELIMITS)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_RATELIMITS,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -79,8 +91,14 @@ func NewCmdRatelimitsUpdate() *cobra.Command {
 		Short: "update (-f update_ratelimits.json)",
 		Long:  "update (-f update_ratelimits.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_RATELIMITS, repo.API_RATELIMITS)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_RATELIMITS,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 
@@ -95,8 +113,14 @@ func NewCmdRatelimitsEnable() *cobra.Command {
 		Short: "enable (-f enable_ratelimits.json)",
 		Long:  "enable (-f enable_ratelimits.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_RATELIMITS, repo.API_RATELIMITS_ENABLE)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_RATELIMITS_ENABLE,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 
@@ -111,8 +135,14 @@ func NewCmdRatelimitsDelete() *cobra.Command {
 		Short: "delete (-f delete_ratelimits.json)",
 		Long:  "delete (-f delete_ratelimits.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_RATELIMITS, repo.API_RATELIMITS_DEL)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_RATELIMITS_DEL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 

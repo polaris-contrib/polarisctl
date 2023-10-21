@@ -39,7 +39,7 @@ var debug bool
 func NewDefaultPolarisCommand() *cobra.Command {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println("[polarisctl internal sys err] UserHomeDir failed:%v\n", err)
+		fmt.Printf("[polarisctl internal sys err] UserHomeDir failed:%v\n", err)
 		os.Exit(1)
 	}
 
@@ -65,7 +65,6 @@ func NewDefaultPolarisCommand() *cobra.Command {
 	// register namespaces
 	root.AddCommand(namespaces.NewCmdNamespaces())
 	root.AddCommand(services.NewCmdServices())
-	root.AddCommand(services.NewCmdAlias())
 	root.AddCommand(instances.NewCmdInstances())
 	root.AddCommand(routings.NewCmdRoutings())
 	root.AddCommand(circuitbreaker.NewCmdCircuitbreaker())
@@ -106,7 +105,7 @@ func initConfig() {
 	}
 
 	if cluster, err = polarisCtlConf.FindCluster(clusterName); err != nil {
-		fmt.Printf("[polarisctl internal sys err] cannot find cluster:%d config\n", clusterName)
+		fmt.Printf("[polarisctl internal sys err] cannot find cluster:%s config\n", clusterName)
 		os.Exit(1)
 	}
 

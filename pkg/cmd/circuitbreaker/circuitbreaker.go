@@ -3,12 +3,13 @@ package circuitbreaker
 import (
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+
 	"github.com/spf13/cobra"
 )
 
-// fileName resource:circuitbreaker description file(format:josn) for create/delete/update
-var fileName string
-var circuitbreakerFields string
+// resourceFile resource:circuitbreaker description file(format:josn) for create/delete/update
+var resourceFile string
+var resourceFields string
 
 // NewCmdCircuitbreaker build circuitbreaker root cmd
 func NewCmdCircuitbreaker() *cobra.Command {
@@ -18,8 +19,8 @@ func NewCmdCircuitbreaker() *cobra.Command {
 		Long:  "circuitbreaker [list|create|delete|enable|update]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
-	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for create/delete/enable/update circuitbreaker")
-	cmd.PersistentFlags().StringVar(&circuitbreakerFields, "print", "", "circuitbreaker print field")
+	cmd.PersistentFlags().StringVarP(&resourceFile, "file", "f", "", "json file for create/delete/enable/update circuitbreaker")
+	cmd.PersistentFlags().StringVar(&resourceFields, "print", "", "circuitbreaker print field,eg:\"jsontag1,jsontag2\"")
 
 	// query command
 	cmd.AddCommand(NewCmdCircuitbreakerList())
@@ -34,7 +35,7 @@ func NewCmdCircuitbreaker() *cobra.Command {
 }
 
 // list param, eg: limit, offset
-var listParam entity.QueryParam
+var listCircuitbreakerParam entity.QueryParam
 var listCircuitbreakerQueryParam entity.CircuitbreakerQueryParam
 
 // NewCmdCircuitbreakerList build circuitbreaker list command
@@ -45,14 +46,19 @@ func NewCmdCircuitbreakerList() *cobra.Command {
 		Short: "list circuitbreaker",
 		Long:  "list circuitbreaker",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("v1.CircuitBreakerRule", circuitbreakerFields).V2Api("v1.CircuitBreakerRule")
-			rsRepo := repo.NewResourceRepo(repo.RS_CIRCUITBREAKER, repo.API_CIRCUITBREAKER)
-			rsRepo.Method("GET").Param(listParam.Encode()).Print(print).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_CIRCUITBREAKER,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(listCircuitbreakerParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
-	listParam.ResourceParam = &listCircuitbreakerQueryParam
-	listParam.RegisterFlag(cmd)
+	listCircuitbreakerParam.ResourceParam = &listCircuitbreakerQueryParam
+	listCircuitbreakerParam.RegisterFlag(cmd)
 	return cmd
 }
 
@@ -63,9 +69,14 @@ func NewCmdCircuitbreakerCreate() *cobra.Command {
 		Short: "create (-f create_circuitbreaker.json)",
 		Long:  "create (-f create_circuitbreaker.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("v1.CircuitBreakerRule", circuitbreakerFields).V2Api("v1.CircuitBreakerRule")
-			rsRepo := repo.NewResourceRepo(repo.RS_CIRCUITBREAKER, repo.API_CIRCUITBREAKER).Print(print)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_CIRCUITBREAKER,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -80,9 +91,14 @@ func NewCmdCircuitbreakerDelete() *cobra.Command {
 		Short: "delete (-f delete_circuitbreaker.json)",
 		Long:  "delete (-f delete_circuitbreaker.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("v1.CircuitBreakerRule", circuitbreakerFields).V2Api("v1.CircuitBreakerRule")
-			rsRepo := repo.NewResourceRepo(repo.RS_CIRCUITBREAKER, repo.API_CIRCUITBREAKER_DEL).Print(print)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_CIRCUITBREAKER_DEL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -97,9 +113,14 @@ func NewCmdCircuitbreakerEnable() *cobra.Command {
 		Short: "enable (-f enable_circuitbreaker.json)",
 		Long:  "enable (-f enable_circuitbreaker.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("v1.CircuitBreakerRule", circuitbreakerFields).V2Api("v1.CircuitBreakerRule")
-			rsRepo := repo.NewResourceRepo(repo.RS_CIRCUITBREAKER, repo.API_CIRCUITBREAKER_ENABLE).Print(print)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_CIRCUITBREAKER_ENABLE,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 
@@ -114,9 +135,14 @@ func NewCmdCircuitbreakerUpdate() *cobra.Command {
 		Short: "update (-f update_circuitbreaker.json)",
 		Long:  "update (-f update_circuitbreaker.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("v1.CircuitBreakerRule", circuitbreakerFields).V2Api("v1.CircuitBreakerRule")
-			rsRepo := repo.NewResourceRepo(repo.RS_CIRCUITBREAKER, repo.API_CIRCUITBREAKER).Print(print)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_CIRCUITBREAKER,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 

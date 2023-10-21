@@ -1,0 +1,12 @@
+{
+    "namespace": "default",
+    "name": "GROUP-123",
+    "comment": "test",
+    "business": "test",
+    "department": "test",
+    "metadata": {
+        "key": "test",
+        "value": "test"
+
+    }
+}

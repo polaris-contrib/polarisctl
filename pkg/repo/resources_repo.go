@@ -7,52 +7,58 @@ import (
 	"os"
 
 	"github.com/0226zy/polarisctl/pkg/entity"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/polarismesh/specification/source/go/api/v1/service_manage"
 )
 
-// ResourceWrite 创建/删除/修改 资源
-type ResourceRepo struct {
-	resource string
-	client   *ApiClient
-	method   string
-	rsFile   string
-	ctlPrint *entity.PolarisPrint
-	batch    bool
-}
+type RepoOption func(repo *ResourceRepo)
 
-// NewResourceRepo 查询操作
-func NewResourceRepo(resource, url string) *ResourceRepo {
-	return &ResourceRepo{
-		resource: resource,
-		client:   NewApiClient(url),
-		ctlPrint: entity.NewPolarisPrint(),
-		batch:    true,
+func WithWriter(writer entity.Writer) RepoOption {
+	return func(repo *ResourceRepo) {
+		repo.writer = writer
+	}
+}
+func WithParser(parser *entity.ResponseParse) RepoOption {
+	return func(repo *ResourceRepo) {
+		repo.parser = parser
+	}
+
+}
+func WithFile(fileName string) RepoOption {
+	return func(repo *ResourceRepo) {
+		repo.rsFile = fileName
 	}
 }
 
-// Batch set batch write
-func (rsRepo *ResourceRepo) Batch(value bool) *ResourceRepo {
-	rsRepo.batch = value
-	return rsRepo
+func WithParam(value string) RepoOption {
+	return func(repo *ResourceRepo) {
+		repo.client.queryParam = value
+	}
 }
 
-// Print set print
-func (rsRepo *ResourceRepo) Print(ctlPrint *entity.PolarisPrint) *ResourceRepo {
-	rsRepo.ctlPrint = ctlPrint
-	return rsRepo
+func WithMethod(method string) RepoOption {
+	return func(repo *ResourceRepo) {
+		repo.method = method
+	}
 }
 
-// Param set get url param
-func (rsRepo *ResourceRepo) Param(value string) *ResourceRepo {
-	rsRepo.client.queryParam = value
-	return rsRepo
+// ResourceWrite 创建/删除/修改 资源
+type ResourceRepo struct {
+	client *ApiClient
+	method string
+	rsFile string
+	writer entity.Writer
+	parser *entity.ResponseParse
 }
 
-// File set put/post/del resources description file
-func (rsRepo *ResourceRepo) File(value string) *ResourceRepo {
-	rsRepo.rsFile = value
-	return rsRepo
+// NewResourceRepo 查询操作
+func NewResourceRepo(url string, options ...RepoOption) *ResourceRepo {
+	ret := &ResourceRepo{
+		client: NewApiClient(url),
+		writer: entity.NewTableWriter(),
+	}
+	for _, option := range options {
+		option(ret)
+	}
+	return ret
 }
 
 // Method set http method:GET/PUT/POST/PUT/DEL
@@ -74,7 +80,7 @@ func (rsRepo ResourceRepo) Build() {
 func (rsRepo ResourceRepo) write() {
 	jsonFile, err := os.Open(rsRepo.rsFile)
 	if err != nil {
-		fmt.Printf("[polarisctl err] input invalid, -f empty\n")
+		fmt.Printf("[polarisctl err] open rs files failed:%v\n", err)
 		os.Exit(1)
 	}
 
@@ -91,52 +97,20 @@ func (rsRepo ResourceRepo) write() {
 		body = rsRepo.client.Post(bytes.NewBuffer(jsonData))
 	} else if rsRepo.method == "PUT" {
 		body = rsRepo.client.Put(bytes.NewBuffer(jsonData))
+	} else if rsRepo.method == "DELETE" {
+		body = rsRepo.client.Delete(bytes.NewBuffer(jsonData))
 	} else {
-		fmt.Printf("[polarisctl internal sys err] resource:%s unkown method:%s\n", rsRepo.resource, rsRepo.method)
+		fmt.Printf("[polarisctl internal sys err] unkown method:%s\n", rsRepo.method)
 		os.Exit(1)
 	}
 
-	if rsRepo.batch {
-
-		var response service_manage.BatchWriteResponse
-		err = jsonpb.Unmarshal(bytes.NewReader(body), &response)
-		if err != nil {
-			fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
-			return
-		}
-		rsRepo.ctlPrint.Response(response).BatchWrite().Print()
-		return
-	}
-
-	var response service_manage.Response
-	err = jsonpb.Unmarshal(bytes.NewReader(body), &response)
-	if err != nil {
-		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
-		return
-	}
-	rsRepo.ctlPrint.Response(response).Write().Print()
+	response := rsRepo.parser.Parse(body)
+	rsRepo.writer.Write(response)
 }
 
 // get query resources
 func (rsRepo ResourceRepo) get() {
 	body := rsRepo.client.Get()
-
-	if rsRepo.batch {
-
-		var response service_manage.BatchQueryResponse
-		err := jsonpb.Unmarshal(bytes.NewReader(body), &response)
-		if err != nil {
-			fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
-			return
-		}
-		rsRepo.ctlPrint.Response(response).BatchQuery().Print()
-		return
-	}
-	var response service_manage.Response
-	err := jsonpb.Unmarshal(bytes.NewReader(body), &response)
-	if err != nil {
-		fmt.Printf("[polarisctl internal err]: unmarshal body failed:%v body:%s\n", err, string(body))
-		return
-	}
-	rsRepo.ctlPrint.Response(response).Query().Print()
+	response := rsRepo.parser.Parse(body)
+	rsRepo.writer.Write(response)
 }

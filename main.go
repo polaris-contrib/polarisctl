@@ -13,8 +13,8 @@ func main() {
 	root := cmd.NewDefaultPolarisCommand()
 
 	if err := root.Execute(); err != nil {
-		fmt.Println("%v", err)
+		fmt.Printf("%v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("cost:%s\n", time.Since(start))
+	fmt.Printf("cost:%s\n\n", time.Since(start))
 }

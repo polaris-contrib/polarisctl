@@ -1,33 +1,47 @@
 package instances
 
 import (
+	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+
 	"github.com/spf13/cobra"
 )
 
-// NewCmdInstanceHost build instances host root cmd
-func NewCmdInstanceHost() *cobra.Command {
+// NewCmdHost build host root cmd
+func NewCmdInstancesHost() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "host [delete|isolate] instances",
+		Use:   "host [delete|isolate]",
 		Short: "host [delete|isolate]",
 		Long:  "host [delete|isolate]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
+	cmd.PersistentFlags().StringVarP(&resourceFile, "file", "f", "", "json file for delete/isolate host")
+	cmd.PersistentFlags().StringVar(&resourceFields, "print", "", "host print field,eg:\"jsontag1,jsontag2\"")
 
-	cmd.AddCommand(NewCmdInstanceHostDelete())
-	cmd.AddCommand(NewCmdInstancesHostIsolate())
+	// query command
+
+	// write command
+	cmd.AddCommand(NewCmdHostDelete())
+	cmd.AddCommand(NewCmdHostIsolate())
+
 	return cmd
 }
 
-// NewCmdInstanceHostDelete build instance host delete command
-func NewCmdInstanceHostDelete() *cobra.Command {
+// NewCmdHostDelete build host delete command
+func NewCmdHostDelete() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete instances with host",
-		Short: "delete (-f create_instances_host.json)",
-		Long:  "delete (-f create_instances_host.json)",
+		Use:   "delete host",
+		Short: "delete (-f delete_host.json)",
+		Long:  "delete (-f delete_host.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES_HOST_DEL)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES_HOST_DEL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -35,15 +49,21 @@ func NewCmdInstanceHostDelete() *cobra.Command {
 	return cmd
 }
 
-// NewCmdInstanceHostDelete build instance host isolate command
-func NewCmdInstancesHostIsolate() *cobra.Command {
+// NewCmdHostIsolate build host isolate command
+func NewCmdHostIsolate() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "isolate instances with host",
-		Short: "isolate (-f isolate_instances.json)",
-		Long:  "isolate (-f isolate_instances.json)",
+		Use:   "isolate host",
+		Short: "isolate (-f isolate_host.json)",
+		Long:  "isolate (-f isolate_host.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES_HOST_ISOLATE)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES_HOST_ISOLATE,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 

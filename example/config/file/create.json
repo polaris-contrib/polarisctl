@@ -1,0 +1,12 @@
+{
+    "namespace": "test-polarisctl-config-file-10-21",
+    "group": "GROUP-123",
+    "name": "application.yaml",
+    "content": "test-polarisctl-config-file",
+    "comment": "test polarisctl",
+    "format": "text",
+    "tags": [{
+        "key": "test",
+        "value": "test"
+    }]
+}

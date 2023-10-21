@@ -3,12 +3,13 @@ package instances
 import (
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+
 	"github.com/spf13/cobra"
 )
 
-// fileName resource:instances description file(format:josn) for create/delete/update
-var fileName string
-var instancesFields string
+// resourceFile resource:instances description file(format:josn) for create/delete/update
+var resourceFile string
+var resourceFields string
 
 // NewCmdInstances build instances root cmd
 func NewCmdInstances() *cobra.Command {
@@ -18,8 +19,8 @@ func NewCmdInstances() *cobra.Command {
 		Long:  "instances [list|labels|create|delete|count|update]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
-	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for create/delete/update instances")
-	cmd.PersistentFlags().StringVar(&instancesFields, "print", "", "instances print field")
+	cmd.PersistentFlags().StringVarP(&resourceFile, "file", "f", "", "json file for create/delete/update instances")
+	cmd.PersistentFlags().StringVar(&resourceFields, "print", "", "instances print field,eg:\"jsontag1,jsontag2\"")
 
 	// query command
 	cmd.AddCommand(NewCmdInstancesList())
@@ -30,13 +31,13 @@ func NewCmdInstances() *cobra.Command {
 	cmd.AddCommand(NewCmdInstancesCreate())
 	cmd.AddCommand(NewCmdInstancesDelete())
 	cmd.AddCommand(NewCmdInstancesUpdate())
-	cmd.AddCommand(NewCmdInstanceHost())
+	cmd.AddCommand(NewCmdInstancesHost())
 
 	return cmd
 }
 
 // list param, eg: limit, offset
-var listParam entity.QueryParam
+var listInstancesParam entity.QueryParam
 var listInstancesQueryParam entity.InstancesQueryParam
 
 // NewCmdInstancesList build instances list command
@@ -47,18 +48,25 @@ func NewCmdInstancesList() *cobra.Command {
 		Short: "list instances",
 		Long:  "list instances",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("instances", instancesFields)
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES)
-			rsRepo.Method("GET").Param(listParam.Encode()).Print(print).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(listInstancesParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
-	listParam.ResourceParam = &listInstancesQueryParam
-	listParam.RegisterFlag(cmd)
+	listInstancesParam.ResourceParam = &listInstancesQueryParam
+	listInstancesParam.RegisterFlag(cmd)
 	return cmd
 }
 
-var labelsQueryParam entity.LabelQueryParam
+// list param, eg: limit, offset
+var labelsInstancesParam entity.QueryParam
+var labelsInstancesQueryParam entity.InstancesQueryParam
 
 // NewCmdInstancesLabels build instances labels command
 func NewCmdInstancesLabels() *cobra.Command {
@@ -68,13 +76,19 @@ func NewCmdInstancesLabels() *cobra.Command {
 		Short: "labels instances",
 		Long:  "labels instances",
 		Run: func(cmd *cobra.Command, args []string) {
-			print := entity.NewPolarisPrint().ResourceConf("instances", instancesFields)
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES_LABELS)
-			rsRepo.Method("GET").Param(labelsQueryParam.Encode()).Batch(false).Print(print).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES_LABELS,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.Response")),
+
+				repo.WithParam(labelsInstancesParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
-	labelsQueryParam.RegisterFlag(cmd)
+	labelsInstancesParam.ResourceParam = &labelsInstancesQueryParam
+	labelsInstancesParam.RegisterFlag(cmd)
 	return cmd
 }
 
@@ -85,8 +99,14 @@ func NewCmdInstancesCreate() *cobra.Command {
 		Short: "create (-f create_instances.json)",
 		Long:  "create (-f create_instances.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -101,8 +121,14 @@ func NewCmdInstancesDelete() *cobra.Command {
 		Short: "delete (-f delete_instances.json)",
 		Long:  "delete (-f delete_instances.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES_DEL)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES_DEL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -110,19 +136,31 @@ func NewCmdInstancesDelete() *cobra.Command {
 	return cmd
 }
 
+// list param, eg: limit, offset
+var countInstancesParam entity.QueryParam
+var countInstancesQueryParam entity.InstancesQueryParam
+
 // NewCmdInstancesCount build instances count command
 func NewCmdInstancesCount() *cobra.Command {
 	cmd := &cobra.Command{
 
 		Use:   "count instances",
-		Short: "count ",
-		Long:  "count ",
+		Short: "count instances",
+		Long:  "count instances",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES_COUNT)
-			rsRepo.Method("GET").Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES_COUNT,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(countInstancesParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
+	countInstancesParam.ResourceParam = &countInstancesQueryParam
+	countInstancesParam.RegisterFlag(cmd)
 	return cmd
 }
 
@@ -133,8 +171,14 @@ func NewCmdInstancesUpdate() *cobra.Command {
 		Short: "update (-f update_instances.json)",
 		Long:  "update (-f update_instances.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_INSTANCES, repo.API_INSTANCES)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_INSTANCES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 

@@ -1,0 +1,13 @@
+{
+    "release_name": "test-polarisctl-10-20-del",
+    "namespace": "default",
+    "group": "config",
+    "file_name": "application.yaml",
+    "content": "del",
+    "comment": "test",
+    "format": "text",
+    "tags": [{
+        "key": "test",
+        "value": "test"
+    }]
+}

@@ -3,11 +3,13 @@ package namespaces
 import (
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+
 	"github.com/spf13/cobra"
 )
 
-// fileName resource:namespaces description file(format:josn) for create/delete/update
-var fileName string
+// resourceFile resource:namespaces description file(format:josn) for create/delete/update
+var resourceFile string
+var resourceFields string
 
 // NewCmdNamespaces build namespaces root cmd
 func NewCmdNamespaces() *cobra.Command {
@@ -17,7 +19,8 @@ func NewCmdNamespaces() *cobra.Command {
 		Long:  "namespaces [list|create|delete|update]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
-	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for create/delete/update namespaces")
+	cmd.PersistentFlags().StringVarP(&resourceFile, "file", "f", "", "json file for create/delete/update namespaces")
+	cmd.PersistentFlags().StringVar(&resourceFields, "print", "", "namespaces print field,eg:\"jsontag1,jsontag2\"")
 
 	// query command
 	cmd.AddCommand(NewCmdNamespacesList())
@@ -31,23 +34,30 @@ func NewCmdNamespaces() *cobra.Command {
 }
 
 // list param, eg: limit, offset
-var param entity.QueryParam
-var namespacesQueryParam entity.NamespacesQueryParam
+var listNamespacesParam entity.QueryParam
+var listNamespacesQueryParam entity.NamespacesQueryParam
 
 // NewCmdNamespacesList build namespaces list command
 func NewCmdNamespacesList() *cobra.Command {
 	cmd := &cobra.Command{
+
 		Use:   "list namespaces",
-		Short: "list --limit=xx --offset=xx",
-		Long:  "list --limit==xx --offset=xx",
+		Short: "list namespaces",
+		Long:  "list namespaces",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
-			rsRepo.Method("GET").Param(param.Encode()).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_NAMESPACES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(listNamespacesParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
-	param.ResourceParam = &namespacesQueryParam
-	param.RegisterFlag(cmd)
+	listNamespacesParam.ResourceParam = &listNamespacesQueryParam
+	listNamespacesParam.RegisterFlag(cmd)
 	return cmd
 }
 
@@ -58,8 +68,14 @@ func NewCmdNamespacesCreate() *cobra.Command {
 		Short: "create (-f create_namespaces.json)",
 		Long:  "create (-f create_namespaces.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_NAMESPACES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -74,8 +90,14 @@ func NewCmdNamespacesDelete() *cobra.Command {
 		Short: "delete (-f delete_namespaces.json)",
 		Long:  "delete (-f delete_namespaces.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_NAMESPACES_DEL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -90,8 +112,14 @@ func NewCmdNamespacesUpdate() *cobra.Command {
 		Short: "update (-f update_namespaces.json)",
 		Long:  "update (-f update_namespaces.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_NAMESPACES, repo.API_NAMESPACES)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_NAMESPACES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 

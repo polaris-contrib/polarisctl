@@ -1,19 +1,15 @@
 package services
 
 import (
-	"fmt"
-	"net/url"
-
 	"github.com/0226zy/polarisctl/pkg/entity"
 	"github.com/0226zy/polarisctl/pkg/repo"
+
 	"github.com/spf13/cobra"
 )
 
-// fileName resource:services description file(format:josn) for create/delete/update
-var fileName string
-
-// resource print conf
-var serviceFields string
+// resourceFile resource:services description file(format:josn) for create/delete/update
+var resourceFile string
+var resourceFields string
 
 // NewCmdServices build services root cmd
 func NewCmdServices() *cobra.Command {
@@ -23,8 +19,8 @@ func NewCmdServices() *cobra.Command {
 		Long:  "services [list|all|create|update|delete]",
 		Run:   func(cmd *cobra.Command, args []string) { cmd.Help() },
 	}
-	cmd.PersistentFlags().StringVarP(&fileName, "file", "f", "", "json file for create/update/delete services")
-	cmd.PersistentFlags().StringVar(&serviceFields, "print", "", "set services print field,eg:--print=name,namespaces")
+	cmd.PersistentFlags().StringVarP(&resourceFile, "file", "f", "", "json file for create/update/delete services")
+	cmd.PersistentFlags().StringVar(&resourceFields, "print", "", "services print field,eg:\"jsontag1,jsontag2\"")
 
 	// query command
 	cmd.AddCommand(NewCmdServicesList())
@@ -34,12 +30,13 @@ func NewCmdServices() *cobra.Command {
 	cmd.AddCommand(NewCmdServicesCreate())
 	cmd.AddCommand(NewCmdServicesUpdate())
 	cmd.AddCommand(NewCmdServicesDelete())
+	cmd.AddCommand(NewCmdServicesAlias())
 
 	return cmd
 }
 
 // list param, eg: limit, offset
-var listParam entity.QueryParam
+var listServicesParam entity.QueryParam
 var listServicesQueryParam entity.ServicesQueryParam
 
 // NewCmdServicesList build services list command
@@ -50,37 +47,47 @@ func NewCmdServicesList() *cobra.Command {
 		Short: "list services",
 		Long:  "list services",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_SERVICES, repo.API_SERVICES)
-			print := entity.NewPolarisPrint().ResourceConf("services", serviceFields)
-			rsRepo.Method("GET").Param(listParam.Encode()).Print(print).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_SERVICES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(listServicesParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
 
-	listParam.ResourceParam = &listServicesQueryParam
-	listParam.RegisterFlag(cmd)
+	listServicesParam.ResourceParam = &listServicesQueryParam
+	listServicesParam.RegisterFlag(cmd)
 	return cmd
 }
 
-var namespace string
+// list param, eg: limit, offset
+var allServicesParam entity.QueryParam
+var allServicesQueryParam entity.ServicesQueryParam
 
 // NewCmdServicesAll build services all command
 func NewCmdServicesAll() *cobra.Command {
 	cmd := &cobra.Command{
 
-		Use:   "all --namespace=xx",
-		Short: "all services names",
-		Long:  "all services names",
+		Use:   "all services",
+		Short: "all services",
+		Long:  "all services",
 		Run: func(cmd *cobra.Command, args []string) {
-			param := url.Values{}
-			if 0 != len(namespace) {
-				param.Add("namespace", namespace)
-			}
-			fmt.Println(len(namespace))
-			rsRepo := repo.NewResourceRepo(repo.RS_SERVICES, repo.API_SERVICESALL)
-			rsRepo.Method("GET").Param(param.Encode()).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_SERVICES_ALL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchQueryResponse")),
+
+				repo.WithParam(allServicesParam.Encode()),
+				repo.WithMethod("GET"))
+			rsRepo.Build()
 		},
 	}
-	cmd.Flags().StringVar(&namespace, "namespace", "", "get namespace all services name")
+
+	allServicesParam.ResourceParam = &allServicesQueryParam
+	allServicesParam.RegisterFlag(cmd)
 	return cmd
 }
 
@@ -91,8 +98,14 @@ func NewCmdServicesCreate() *cobra.Command {
 		Short: "create (-f create_services.json)",
 		Long:  "create (-f create_services.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_SERVICES, repo.API_SERVICES)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_SERVICES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 
@@ -107,8 +120,14 @@ func NewCmdServicesUpdate() *cobra.Command {
 		Short: "update (-f update_services.json)",
 		Long:  "update (-f update_services.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_SERVICES, repo.API_SERVICES)
-			rsRepo.Method("PUT").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_SERVICES,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("PUT"))
+			rsRepo.Build()
 		},
 	}
 
@@ -123,8 +142,14 @@ func NewCmdServicesDelete() *cobra.Command {
 		Short: "delete (-f delete_services.json)",
 		Long:  "delete (-f delete_services.json)",
 		Run: func(cmd *cobra.Command, args []string) {
-			rsRepo := repo.NewResourceRepo(repo.RS_SERVICES, repo.API_SERVICESDEL)
-			rsRepo.Method("POST").File(fileName).Build()
+			rsRepo := repo.NewResourceRepo(
+				repo.API_SERVICES_DEL,
+				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
+				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+
+				repo.WithFile(resourceFile),
+				repo.WithMethod("POST"))
+			rsRepo.Build()
 		},
 	}
 

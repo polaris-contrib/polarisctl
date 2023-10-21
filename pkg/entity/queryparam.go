@@ -31,8 +31,8 @@ type ServicesQueryParam struct {
 	Port           string `param:"port" short:"service port"`
 }
 
-// AliasQueryParam namespace 查询参数
-type AliasQueryParam struct {
+// SericeAliasQueryParam namespace 查询参数
+type ServicesAliasQueryParam struct {
 	Alias          string `param:"alais",short:"service alias name"`
 	AliasNamespace string `param:"alias_namespace",short:"service alias namespace name"`
 	Serice         string `param:"service",short:"service name"`
@@ -91,20 +91,20 @@ type CircuitbreakerQueryParam struct {
 	SrcService       string `param:"srcService"`
 }
 
-// ConfigfilesSearchParam
-type ConfigfileSearchParam struct {
+// ConfigFilesSearchParam
+type ConfigFileSearchParam struct {
 	Group     string `param:"group"`
 	Namespace string `param:"namespace"`
 }
 
-// ConfigfileQueryParam
-type ConfigfileQueryParam struct {
+// ConfigFileQueryParam
+type ConfigFileQueryParam struct {
 	Group     string `param:"group"`
 	Namespace string `param:"namespace"`
 }
 
-// ConfiggroupQueryParam
-type ConfiggroupQueryParam struct {
+// ConfigGroupQueryParam
+type ConfigGroupQueryParam struct {
 	Business   string `param:"business"`
 	Department string `param:"department"`
 	Name       string `param:"name"`
@@ -113,10 +113,10 @@ type ConfiggroupQueryParam struct {
 	OrderType  string `param:"order_type"`
 }
 
-// ReleaseQueryParam
-type ReleaseQueryParam struct {
+// ConfigReleaseQueryParam
+type ConfigReleaseQueryParam struct {
 	FileName    string `param:"file_name"`
-	Group       string `param:"grup"`
+	Group       string `param:"group"`
 	Name        string `param:"name"`
 	Namespace   string `param:"namespace"`
 	OnlyActive  string `param:"only_active"`
@@ -125,23 +125,26 @@ type ReleaseQueryParam struct {
 	ReleaseName string `param:"release_name"`
 }
 
-// ReleaseVersionQueryParam
-type ReleaseVersionQueryParam struct {
+// ConfigReleaseVersionQueryParam
+type ConfigReleaseVersionQueryParam struct {
 	FileName  string `param:"file_name"`
 	Group     string `param:"group"`
 	Namespace string `param:"namespace"`
 }
 
-// ReleaseInfoQueryParam
-type ReleaseInfoQueryParam struct {
+// CongfigReleaseInfoQueryParam
+type ConfigReleaseInfoQueryParam struct {
 	Group       string `param:"group"`
 	Name        string `param:"name"`
 	Namespace   string `param:"namespace"`
 	ReleaseName string `param:"release_name"`
 }
 
-// ReleaseHistoryQueryParam
-type ReleaseHistoryQueryParam struct {
+// MaintainQueryParam
+type MaintainQueryParam struct{}
+
+// ConfigReleaseHistoryQueryParam
+type ConfigReleaseHistoryQueryParam struct {
 	Group     string `param:"group"`
 	Name      string `param:"name"`
 	Namespace string `param:"namespace"`
