@@ -118,7 +118,7 @@ func NewCmdReleaseVersions() *cobra.Command {
 
 // list param, eg: limit, offset
 var infoReleaseParam entity.QueryParam
-var infoReleaseQueryParam entity.ConfigReleaseQueryParam
+var infoReleaseQueryParam entity.ConfigReleaseInfoQueryParam
 
 // NewCmdReleaseInfo build release info command
 func NewCmdReleaseInfo() *cobra.Command {
@@ -176,7 +176,7 @@ func NewCmdReleaseDelete() *cobra.Command {
 			rsRepo := repo.NewResourceRepo(
 				repo.API_RELEASE_DEL,
 				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
-				repo.WithParser(entity.NewResponseParse("v1.ConfigResponse")),
+				repo.WithParser(entity.NewResponseParse("v1.ConfigBatchWriteResponse")),
 
 				repo.WithFile(resourceFile),
 				repo.WithMethod("POST"))

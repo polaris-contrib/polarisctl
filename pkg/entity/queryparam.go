@@ -23,7 +23,7 @@ type ServicesQueryParam struct {
 	Namespace      string `param:"namespace" short:"service naemspace"`
 	Business       string `param:"business" short:"service business"`
 	Department     string `param:"department" short:"service department"`
-	Keys           string `param:"keys ,short:"service keys"`
+	Keys           string `param:"keys  short:"service keys"`
 	Values         string `param:"values" short:"service key values"`
 	InstanceKeys   string `param:"instance_keys" short:" service instance keys"`
 	InstanceValues string `param:"instance_values" short:"service instance key values"`
@@ -33,15 +33,15 @@ type ServicesQueryParam struct {
 
 // SericeAliasQueryParam namespace 查询参数
 type ServicesAliasQueryParam struct {
-	Alias          string `param:"alais",short:"service alias name"`
-	AliasNamespace string `param:"alias_namespace",short:"service alias namespace name"`
-	Serice         string `param:"service",short:"service name"`
-	Namespace      string `param:"namespace",short:"service namespace name"`
+	Alias          string `param:"alais" short:"service alias name"`
+	AliasNamespace string `param:"alias_namespace" short:"service alias namespace name"`
+	Serice         string `param:"service" short:"service name"`
+	Namespace      string `param:"namespace" short:"service namespace name"`
 }
 
 // NamespaceQueryParam namespace 查询参数
 type NamespacesQueryParam struct {
-	Name string `param:"name",short:"namespace name"`
+	Name string `param:"name" short:"namespace name"`
 }
 
 // LabelQueryParam namespace 查询参数
@@ -52,16 +52,16 @@ type LabelQueryParam struct {
 
 // RoutingsQueryParam routings 查询参数
 type RoutingsQueryParam struct {
-	ID                   string `param:"id",short:"instances id"`
-	Namespace            string `param:"namespace",short:"namespace name"`
-	Service              string `param:"service",short:"service name"`
-	Enable               string `param:"enable",short:"host name"`
-	SourceService        string `param:"source_service",short:"host name"`
-	SourceNamespace      string `param:"source_namespace",short:"host name"`
-	DestinationService   string `param:"destination_service",short:"host name"`
-	DestinationNamespace string `param:"destination_namespace",short:"host name"`
-	OrderField           string `param:"order_field",short:"host name"`
-	OrderType            string `param:"order_type",short:"host name"`
+	ID                   string `param:"id" short:"instances id"`
+	Namespace            string `param:"namespace" short:"namespace name"`
+	Service              string `param:"service" short:"service name"`
+	Enable               string `param:"enable" short:"host name"`
+	SourceService        string `param:"source_service" short:"host name"`
+	SourceNamespace      string `param:"source_namespace" short:"host name"`
+	DestinationService   string `param:"destination_service" short:"host name"`
+	DestinationNamespace string `param:"destination_namespace" short:"host name"`
+	OrderField           string `param:"order_field" short:"host name"`
+	OrderType            string `param:"order_type" short:"host name"`
 }
 
 // RatelimitsQueryParam
@@ -134,9 +134,9 @@ type ConfigReleaseVersionQueryParam struct {
 
 // CongfigReleaseInfoQueryParam
 type ConfigReleaseInfoQueryParam struct {
-	Group       string `param:"group"`
-	Name        string `param:"name"`
-	Namespace   string `param:"namespace"`
+	Group       string `param:"group" request:"true"`
+	Name        string `param:"name" request:"true"`
+	Namespace   string `param:"namespace" request:"true"`
 	ReleaseName string `param:"release_name"`
 }
 
@@ -163,16 +163,16 @@ type FaultdetectorsQueryParam struct {
 
 // InstancesQueryParam namespace 查询参数
 type InstancesQueryParam struct {
-	Id        string `param:"id",short:"instances id"`
-	Namespace string `param:"namespace",short:"namespace name"`
-	Service   string `param:"service",short:"service name"`
-	Host      string `param:"host",short:"host name"`
-	Keys      string `param:"keys",short:"host name"`
-	Values    string `param:"values",short:"host name"`
-	Healthy   string `param:"healthy",short:"host name"`
-	Isolate   string `param:"isolate",short:"host name"`
-	Protocol  string `param:"protocol",short:"host name"`
-	Version   string `param:"version",short:"host name"`
+	Id        string `param:"id" short:"instances id"`
+	Namespace string `param:"namespace" short:"namespace name"`
+	Service   string `param:"service" short:"service name"`
+	Host      string `param:"host" short:"host name"`
+	Keys      string `param:"keys" short:"host name"`
+	Values    string `param:"values" short:"host name"`
+	Healthy   string `param:"healthy" short:"host name"`
+	Isolate   string `param:"isolate" short:"host name"`
+	Protocol  string `param:"protocol" short:"host name"`
+	Version   string `param:"version" short:"host name"`
 }
 
 // RegisterFlag 注册查询参数

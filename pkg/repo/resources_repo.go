@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/0226zy/polarisctl/pkg/entity"
 )
@@ -92,25 +93,34 @@ func (rsRepo ResourceRepo) write() {
 	}
 
 	body := []byte{}
+	httpCode := 0
 
 	if rsRepo.method == "POST" {
-		body = rsRepo.client.Post(bytes.NewBuffer(jsonData))
+		httpCode, body = rsRepo.client.Post(bytes.NewBuffer(jsonData))
 	} else if rsRepo.method == "PUT" {
-		body = rsRepo.client.Put(bytes.NewBuffer(jsonData))
+		httpCode, body = rsRepo.client.Put(bytes.NewBuffer(jsonData))
 	} else if rsRepo.method == "DELETE" {
-		body = rsRepo.client.Delete(bytes.NewBuffer(jsonData))
+		httpCode, body = rsRepo.client.Delete(bytes.NewBuffer(jsonData))
 	} else {
 		fmt.Printf("[polarisctl internal sys err] unkown method:%s\n", rsRepo.method)
 		os.Exit(1)
 	}
 
+	if 200 != httpCode {
+		rsRepo.writer.Write(&entity.HttpFailed{strconv.Itoa(httpCode), string(body)})
+		return
+	}
 	response := rsRepo.parser.Parse(body)
 	rsRepo.writer.Write(response)
 }
 
 // get query resources
 func (rsRepo ResourceRepo) get() {
-	body := rsRepo.client.Get()
+	httpCode, body := rsRepo.client.Get()
+	if 200 != httpCode {
+		rsRepo.writer.Write(&entity.HttpFailed{strconv.Itoa(httpCode), string(body)})
+		return
+	}
 	response := rsRepo.parser.Parse(body)
 	rsRepo.writer.Write(response)
 }

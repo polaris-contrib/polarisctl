@@ -89,7 +89,7 @@ func NewCmdAliasUpdate() *cobra.Command {
 			rsRepo := repo.NewResourceRepo(
 				repo.API_ALIAS,
 				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
-				repo.WithParser(entity.NewResponseParse("v1.BatchWriteResponse")),
+				repo.WithParser(entity.NewResponseParse("v1.Response")),
 
 				repo.WithFile(resourceFile),
 				repo.WithMethod("PUT"))

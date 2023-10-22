@@ -165,7 +165,7 @@ func (client *ApiClient) buildURL() {
 }
 
 // Put 更新/修改操作
-func (client *ApiClient) Delete(body io.Reader) []byte {
+func (client *ApiClient) Delete(body io.Reader) (int, []byte) {
 	client.buildURL()
 	client.buildReq("DELETE", client.murl.String(), body)
 	client.req.Header.Add("Content-Type", "application/json")
@@ -173,7 +173,7 @@ func (client *ApiClient) Delete(body io.Reader) []byte {
 }
 
 // Put 更新/修改操作
-func (client *ApiClient) Put(body io.Reader) []byte {
+func (client *ApiClient) Put(body io.Reader) (int, []byte) {
 	client.buildURL()
 	client.buildReq("PUT", client.murl.String(), body)
 	client.req.Header.Add("Content-Type", "application/json")
@@ -181,7 +181,7 @@ func (client *ApiClient) Put(body io.Reader) []byte {
 }
 
 // Post 创建
-func (client *ApiClient) Post(body io.Reader) []byte {
+func (client *ApiClient) Post(body io.Reader) (int, []byte) {
 	client.buildURL()
 	client.buildReq("POST", client.murl.String(), body)
 	client.req.Header.Add("Content-Type", "application/json")
@@ -189,14 +189,14 @@ func (client *ApiClient) Post(body io.Reader) []byte {
 }
 
 // Get 查询
-func (client *ApiClient) Get() []byte {
+func (client *ApiClient) Get() (int, []byte) {
 	client.buildURL()
 	client.buildReq("GET", client.murl.String(), nil)
 	return client.do()
 }
 
 // do 执行 http do ，处理 http code
-func (client *ApiClient) do() []byte {
+func (client *ApiClient) do() (int, []byte) {
 	debuglog := viper.GetBool("debug")
 	defer func() {
 		// clear req
@@ -217,21 +217,18 @@ func (client *ApiClient) do() []byte {
 	}
 	defer res.Body.Close()
 
-	if !client.statusCheck(res.StatusCode) {
-		fmt.Printf("[polarisctl internal sys err] http %s failed:%s\n", method, res.Status)
-	}
-
 	// parse body
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Printf("[polarisctl internal sys err] http %s read body failed:%v\n", method, err)
 		os.Exit(1)
 	}
+
 	if debuglog {
 		fmt.Printf("[polarisctl debug] resp :%+v\n", res)
 		fmt.Printf("[polarisctl debug] body :%s\n", string(body))
 	}
-	return body
+	return res.StatusCode, body
 }
 
 // buildReq 构造 req 设置 token

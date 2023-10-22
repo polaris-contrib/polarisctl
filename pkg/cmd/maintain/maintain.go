@@ -155,7 +155,7 @@ func NewCmdMaintainClients() *cobra.Command {
 			rsRepo := repo.NewResourceRepo(
 				repo.API_MAINTAIN_CLIENT,
 				repo.WithWriter(entity.NewTableWriter(entity.WithTags(resourceFields))),
-				repo.WithParser(entity.NewResponseParse("Maintain.SDKClient")),
+				repo.WithParser(entity.NewResponseParse("Maintain.Clients")),
 
 				repo.WithParam(clientsMaintainParam.Encode()),
 				repo.WithMethod("GET"))

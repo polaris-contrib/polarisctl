@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
@@ -12,20 +13,21 @@ import (
 	"github.com/polarismesh/specification/source/go/api/v1/service_manage"
 )
 
-var resourceCache map[string]interface{}
+var resourceBuilder map[string]func() interface{}
 
 func init() {
-	resourceCache = map[string]interface{}{
-		"v1.BatchQueryResponse":       &service_manage.BatchQueryResponse{},
-		"v1.BatchWriteResponse":       &service_manage.BatchWriteResponse{},
-		"v1.Response":                 &service_manage.Response{},
-		"v1.ConfigBatchQueryResponse": &config_manage.ConfigBatchQueryResponse{},
-		"v1.ConfigBatchWriteResponse": &config_manage.ConfigBatchWriteResponse{},
-		"v1.ConfigResponse":           &config_manage.ConfigResponse{},
-		"Maintain.LogLevel":           &[]LogLevelResponse{},
-		"Maintain.CMDB":               &[]CMDBResponse{},
-		"Maintain.Leader":             &[]LeadersResponse{},
-		"Maintain.SDKClient":          &SDKClient{},
+	resourceBuilder = map[string]func() interface{}{
+
+		"v1.BatchQueryResponse":       func() interface{} { return &service_manage.BatchQueryResponse{} },
+		"v1.BatchWriteResponse":       func() interface{} { return &service_manage.BatchWriteResponse{} },
+		"v1.Response":                 func() interface{} { return &service_manage.Response{} },
+		"v1.ConfigBatchQueryResponse": func() interface{} { return &config_manage.ConfigBatchQueryResponse{} },
+		"v1.ConfigBatchWriteResponse": func() interface{} { return &config_manage.ConfigBatchWriteResponse{} },
+		"v1.ConfigResponse":           func() interface{} { return &config_manage.ConfigResponse{} },
+		"Maintain.CMDB":               func() interface{} { return &[]CMDB{} },
+		"Maintain.LogLevel":           func() interface{} { return &[]LogLevel{} },
+		"Maintain.Leader":             func() interface{} { return &[]Leaders{} },
+		"Maintain.Clients":            func() interface{} { return &Clients{} },
 	}
 }
 
@@ -49,45 +51,50 @@ func (parse *ResponseParse) ResponseKind(kind string) *ResponseParse {
 
 // Parse unmarshal json body to pb message /strcut
 func (parse *ResponseParse) Parse(data []byte) interface{} {
-	target, ok := resourceCache[parse.responseKind]
+	build, ok := resourceBuilder[parse.responseKind]
 	if !ok {
 		fmt.Printf("[polarisctl internal sys err]: unknown key: %s\n", parse.responseKind)
-		return nil
+		os.Exit(1)
 	}
 
+	instance := build()
 	if strings.HasPrefix(parse.responseKind, "Maintain.") {
-		err := json.Unmarshal(data, target)
+		err := json.Unmarshal(data, instance)
 		if err != nil {
-			fmt.Printf("[polarisctl internal err] unmarshal data failed:%v data:%s\n", err, string(data))
-			return nil
+			fmt.Printf("[polarisctl internal err] unmarshal maitain data failed:%v data:%s\n", err, string(data))
+			os.Exit(1)
 		}
-		return target
 	} else {
-		instance := target.(proto.Message)
-		err := jsonpb.Unmarshal(bytes.NewReader(data), instance)
+		target := instance.(proto.Message)
+		err := jsonpb.Unmarshal(bytes.NewReader(data), target)
 		if err != nil {
 			fmt.Printf("[polarisctl internal err] unmarshal data failed:%v data:%s\n", err, string(data))
-			return nil
+			os.Exit(1)
 		}
-		return instance
+		instance = target
 	}
-	return nil
+	return instance
 }
 
-// LogLevelResponse
-type LogLevelResponse struct {
+// LogLevel
+type LogLevel struct {
 	Name  string `json:"Name"`
 	Level string `json:"Level"`
 }
 
-// LeadersResponse
-type LeadersResponse struct {
-	ElectKey string `json:"ElectKey"`
-	Host     string `json:"Host"`
+// Leaders
+type Leaders struct {
+	ElectKey   string `json:"ElectKey"`
+	Host       string `json:"Host"`
+	Ctime      int64  `json:"Ctime"`
+	CreateTime string `json:"CreateTime"`
+	Mtime      int64  `json:"Mtime"`
+	ModifyTime string `json:"ModifyTime"`
+	Valid      bool   `json:"Valid"`
 }
 
-// CMDBResponse
-type CMDBResponse struct {
+// CMDB
+type CMDB struct {
 	Campus   string `json:"Campus"`
 	CampusID string `json:"CampusID"`
 	IP       string `json:"IP"`
@@ -97,8 +104,8 @@ type CMDBResponse struct {
 	ZoneID   string `json:"ZoneID"`
 }
 
-// ClientsResponse
-type ClientsResponse struct {
+// Clients
+type Clients struct {
 	// 响应码
 	Code int64 `json:"Code"`
 	// 客户端列表
@@ -109,4 +116,10 @@ type ClientsResponse struct {
 type SDKClient struct {
 	Labels  map[string]interface{} `json:"labels"`
 	Targets []string               `json:"targets"`
+}
+
+// HttpFailed http failed resp
+type HttpFailed struct {
+	Code string `json:"http code"`
+	Body string `json:"http body"`
 }
