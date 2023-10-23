@@ -1,0 +1,7 @@
+{
+    "service": "polarisctl_test_svr1",
+    "namespace": "default",
+    "alias": "polarisctl_test_svr1_alias1",
+    "alias_namespace": "default",
+    "comment": "test update"
+}

@@ -1,0 +1,38 @@
+[{
+    "name": "polarisctl-test-faultdetectors",
+    "target_service": {
+        "namespace": "default",
+        "service": "polaris-test-svr1",
+        "method": {
+            "type": 0,
+            "value": "test-method",
+            "value_type": 0
+        }
+    },
+    "description": "string",
+    "protocol": 0,
+    "port": 0,
+    "interval": 1,
+    "timeout": 10,
+    "http_config": {
+        "url": "v1/faultdetectors",
+        "method": "HTTP",
+        "headers": [{
+            "key": "test",
+            "value": "test-v1"
+        }],
+        "body": ""
+    },
+    "tcp_config": {
+        "send": "test",
+        "receive": [
+            "test"
+        ]
+    },
+    "udp_config": {
+        "send": "test",
+        "receive": [
+            "test"
+        ]
+    }
+}]

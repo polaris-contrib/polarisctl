@@ -1,0 +1,6 @@
+[{
+    "host": "127.0.0.2",
+    "port": 8080,
+    "service": "polarisctl_test_svr1-10-20",
+    "namespace": "default"
+}]

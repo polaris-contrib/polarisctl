@@ -1,0 +1,19 @@
+[{
+        "service": "polarisctl_test_svr3-10-20",
+        "namespace": "default",
+        "host": "127.0.0.2",
+        "isolate": true
+    },
+    {
+        "service": "polarisctl_test_svr2-10-20",
+        "namespace": "default",
+        "host": "127.0.0.2",
+        "isolate": true
+    },
+    {
+        "service": "polarisctl_test_svr1-10-20",
+        "namespace": "default",
+        "host": "127.0.0.2",
+        "isolate": true
+    }
+]

@@ -1,0 +1,12 @@
+{
+    "name": "application.yml",
+    "namespace": "default",
+    "group": "GROUP-123",
+    "content": "test",
+    "comment": "test",
+    "format": "text",
+    "tags": [{
+        "key": "test",
+        "value": "test"
+    }]
+}
