@@ -17,8 +17,8 @@
 package ratelimits
 
 import (
-	"github.com/0226zy/polarisctl/pkg/entity"
-	"github.com/0226zy/polarisctl/pkg/repo"
+	"github.com/polaris-contrilb/polarisctl/pkg/entity"
+	"github.com/polaris-contrilb/polarisctl/pkg/repo"
 
 	"github.com/spf13/cobra"
 )

@@ -23,7 +23,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/0226zy/polarisctl/pkg/entity"
+	"github.com/polaris-contrilb/polarisctl/pkg/entity"
 )
 
 type RepoOption func(repo *ResourceRepo)

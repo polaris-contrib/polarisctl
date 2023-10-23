@@ -21,7 +21,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/0226zy/polarisctl/pkg/cmd"
+	"github.com/polaris-contrilb/polarisctl/pkg/cmd"
 )
 
 func main() {
