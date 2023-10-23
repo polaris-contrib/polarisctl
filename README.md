@@ -18,7 +18,7 @@
 
 # Documentation
 
-
+[usage](https://github.com/0226zy/polarisctl/blob/main/doc.md)
 
 ## Contributors
 
